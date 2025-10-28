@@ -60,6 +60,7 @@ export const STRINGS: Record<Language, Record<string, string>> = {
     modelAdvanced: 'Zaawansowany',
     modelPremium: 'Premium',
     sessionHeaderModel: 'Model',
+    downloadAudio: 'Pobierz audio',
   },
   en: {
     appName: 'meetsnap',
@@ -120,5 +121,6 @@ export const STRINGS: Record<Language, Record<string, string>> = {
     modelAdvanced: 'Advanced',
     modelPremium: 'Premium',
     sessionHeaderModel: 'Model',
+    downloadAudio: 'Download Audio',
   },
 };

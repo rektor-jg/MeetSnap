@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import type { Language, AiModel, RecordingErrorType } from '../types';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { formatTime } from '../utils/formatUtils';
-import { MicIcon, PauseIcon, PlayIcon, StopIcon, DownloadIcon } from './icons';
+import { SoundWaveIcon, PauseIcon, PlayIcon, StopIcon, DownloadIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
 
 interface RecordPanelProps {
@@ -87,7 +87,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit, lang }) => {
         )}
       <div className={`relative flex items-center justify-center w-36 h-36 rounded-full transition-all duration-300 ${isRecording ? 'bg-red-500/10 dark:bg-red-900/50' : 'bg-gray-200 dark:bg-zinc-800'}`}>
         {isRecording && <div className="absolute inset-0 rounded-full bg-red-500/10 dark:bg-red-500/20 animate-[pulse_1.5s_infinite]"></div>}
-        <MicIcon className={`w-14 h-14 transition-colors ${isRecording ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-zinc-400'}`} />
+        <SoundWaveIcon className={`w-14 h-14 transition-colors ${isRecording ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-zinc-400'}`} />
       </div>
       
       <p className="text-5xl font-mono text-black dark:text-white tracking-wider">{formatTime(time)}</p>

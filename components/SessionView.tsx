@@ -4,7 +4,7 @@ import { Spinner } from './Spinner';
 import { formatTime, formatTimestamp } from '../utils/formatUtils';
 import { STRINGS } from '../utils/i18n';
 import { ExportButtons } from './ExportButtons';
-import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon } from './icons';
+import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, SpeakerWaveIcon } from './icons';
 
 interface SessionViewProps {
   session: Session;
@@ -65,6 +65,19 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, lang
   
   const modelName = session.aiModel === 'fast' ? STRINGS[lang].modelFast : session.aiModel === 'advanced' ? STRINGS[lang].modelAdvanced : STRINGS[lang].modelPremium;
 
+  const handleDownloadAudio = () => {
+    if (session.audioBlob) {
+      const url = URL.createObjectURL(session.audioBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${session.id || 'recording'}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   return (
     <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl shadow-lg dark:shadow-2xl dark:shadow-black/30 p-6">
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-gray-200 dark:border-zinc-800/50 mb-6 gap-4">
@@ -101,7 +114,18 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, lang
                 <button onClick={() => setActiveTab('summary')} className={tabClasses('summary')}>{STRINGS[lang].summaryTab}</button>
                 <button onClick={() => setActiveTab('raw')} className={tabClasses('raw')}>{STRINGS[lang].rawTab}</button>
             </div>
-            <ExportButtons sessionId={session.id} session={session} lang={lang} />
+            <div className="flex items-center gap-2">
+                {session.audioBlob && (
+                  <button 
+                      onClick={handleDownloadAudio}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white transition-colors rounded-lg border border-gray-300/70 dark:border-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
+                      title={STRINGS[lang].downloadAudio}
+                  >
+                      <SpeakerWaveIcon className="w-4 h-4" />
+                  </button>
+                )}
+                <ExportButtons sessionId={session.id} session={session} lang={lang} />
+            </div>
         </div>
         
         <div className="bg-white dark:bg-black/20 p-6 rounded-lg min-h-[300px] border border-gray-200 dark:border-zinc-800/50">
