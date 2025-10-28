@@ -1,0 +1,8 @@
+{
+  "name": "MeetSnap",
+  "description": "Aplikacja umożliwia nagrywanie lub wgrywanie plików audio, transkrypcję i (opcjonalnie) streszczenie, a następnie wyświetla TL;DR, Action items oraz Transkrypcję z możliwością eksportu.",
+  "requestFramePermissions": [
+    "microphone",
+    "display-capture"
+  ]
+}
