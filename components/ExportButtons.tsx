@@ -7,15 +7,16 @@ import { SettingsContext } from '../context/SettingsContext';
 interface ExportButtonsProps {
   sessionId: string;
   session: Session;
+  activeTab: 'summary' | 'raw';
 }
 
-export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session }) => {
+export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session, activeTab }) => {
   const { lang } = useContext(SettingsContext);
 
   const handleExport = (format: 'md' | 'srt' | 'vtt' | 'txt') => {
     switch (format) {
       case 'md':
-        exportToMarkdown(session, lang);
+        exportToMarkdown(session, lang, activeTab);
         break;
       case 'srt':
         exportToSRT(session);
@@ -24,7 +25,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session
         exportToVTT(session);
         break;
       case 'txt':
-        exportToTXT(session);
+        exportToTXT(session, activeTab);
         break;
     }
   };

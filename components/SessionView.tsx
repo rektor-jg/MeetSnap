@@ -3,11 +3,13 @@ import type { Session, AppView } from '../types';
 import { formatTime } from '../utils/formatUtils';
 import { STRINGS } from '../utils/i18n';
 import { ExportButtons } from './ExportButtons';
-import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, DownloadIcon, ChevronLeftIcon } from './icons';
+import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, DownloadIcon, ChevronLeftIcon, NotionIcon } from './icons';
 import { ProcessingView } from './ProcessingView';
 import { CopyButton } from './CopyButton';
 import { SettingsContext } from '../context/SettingsContext';
 import { EditableTitle } from './EditableTitle';
+import { formatForNotion } from '../services/geminiService';
+import { Spinner } from './Spinner';
 
 interface SessionViewProps {
   session: Session;
@@ -33,11 +35,34 @@ const StatusBadge: React.FC<{ status: Session['status'] }> = ({ status }) => {
 
 export const SessionView: React.FC<SessionViewProps> = ({ session, setView, updateSession }) => {
   const { lang } = useContext(SettingsContext);
-  const [activeTab, setActiveTab] = useState<Tab>('summary');
+  const [activeTab, setActiveTab] = useState<Tab>(session.doSummary ? 'summary' : 'raw');
+  const [isFormatting, setIsFormatting] = useState(false);
+  const [formatError, setFormatError] = useState<string | null>(null);
 
   const handleTitleSave = (newTitle: string) => {
     if (newTitle && newTitle !== session.title) {
         updateSession(session.id, { title: newTitle });
+    }
+  };
+  
+  const handleFormatForNotion = async () => {
+    if (!session.artifacts?.rawTranscript) return;
+    setIsFormatting(true);
+    setFormatError(null);
+    try {
+        const formattedSummary = await formatForNotion(session.artifacts.rawTranscript, session.aiModel);
+        updateSession(session.id, {
+            artifacts: {
+                ...session.artifacts,
+                summaryMd: formattedSummary,
+            },
+        });
+        setActiveTab('summary');
+    } catch (error) {
+        console.error("Failed to format for Notion:", error);
+        setFormatError(STRINGS[lang].formatError);
+    } finally {
+        setIsFormatting(false);
     }
   };
 
@@ -82,99 +107,111 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
     }
   };
 
+  const textToCopy = activeTab === 'summary' 
+    ? session.artifacts?.summaryMd || '' 
+    : session.artifacts?.rawTranscript || '';
+
   return (
     <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl shadow-lg dark:shadow-2xl dark:shadow-black/30 p-4 sm:p-6">
-        <header className="flex flex-row flex-wrap items-center justify-between gap-x-4 gap-y-3 pb-4 border-b border-gray-200 dark:border-zinc-800/50 mb-6">
-            <div className="flex items-start gap-3 sm:gap-4 flex-grow min-w-0">
-                <button
-                    onClick={() => setView({ type: 'history' })}
-                    className="p-2 rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-zinc-900 mt-1"
-                    aria-label="Back to history"
-                >
-                    <ChevronLeftIcon className="w-5 h-5" />
-                </button>
-                <div className="flex-grow min-w-0">
-                    <EditableTitle
-                      initialTitle={session.title || STRINGS[lang].sessionViewTitle}
-                      onSave={handleTitleSave}
-                      placeholder={STRINGS[lang].sessionViewTitle}
-                    />
+        <header className="pb-4 border-b border-gray-200 dark:border-zinc-800/50 mb-6">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-y-4 gap-x-6">
+                
+                 {/* Right side content: Status and Download. Placed first in code for flexbox ordering on mobile. */}
+                 <div className="w-full sm:w-auto flex items-center justify-end gap-3 flex-shrink-0 order-1 sm:order-2">
+                    <StatusBadge status={session.status}/>
+                    {session.audioBlob && (
+                        <button 
+                            onClick={handleDownloadAudio}
+                            className="p-2 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white transition-colors rounded-lg border border-gray-300/70 dark:border-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
+                            title={STRINGS[lang].downloadAudio}
+                        >
+                            <DownloadIcon className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
 
-                    <div className="flex items-center flex-wrap gap-x-4 sm:gap-x-6 gap-y-2 mt-2 text-gray-500 dark:text-zinc-400 text-sm">
-                        <div className="flex items-center gap-1.5" title={new Date(session.createdAt).toLocaleString(lang)}>
-                            <CalendarIcon className="w-4 h-4" />
-                            <span>{new Date(session.createdAt).toLocaleDateString(lang, { dateStyle: 'medium'})}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            <LanguageIcon className="w-4 h-4" />
-                            <span>{session.language.toUpperCase()}</span>
-                        </div>
-                        {session.durationSec && (
-                            <div className="flex items-center gap-1.5">
-                                <ClockIcon className="w-4 h-4" />
-                                <span>{formatTime(session.durationSec)}</span>
+                {/* Left side content: Back button, Title, Details, Export */}
+                <div className="flex items-start gap-3 sm:gap-4 flex-grow min-w-0 order-2 sm:order-1">
+                     <button
+                        onClick={() => setView({ type: 'history' })}
+                        className="p-2 rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-zinc-900 mt-1 flex-shrink-0"
+                        aria-label="Back to history"
+                    >
+                        <ChevronLeftIcon className="w-5 h-5" />
+                    </button>
+                    <div className="flex-grow min-w-0">
+                        <EditableTitle
+                            initialTitle={session.title || STRINGS[lang].sessionViewTitle}
+                            onSave={handleTitleSave}
+                            placeholder={STRINGS[lang].sessionViewTitle}
+                        />
+                        <div className="flex items-center flex-wrap gap-x-4 sm:gap-x-6 gap-y-2 mt-2 text-gray-500 dark:text-zinc-400 text-sm">
+                            <div className="flex items-center gap-1.5" title={new Date(session.createdAt).toLocaleString(lang)}>
+                                <CalendarIcon className="w-4 h-4" />
+                                <span>{new Date(session.createdAt).toLocaleDateString(lang, { dateStyle: 'medium'})}</span>
                             </div>
-                        )}
-                        {session.aiModel && (
                             <div className="flex items-center gap-1.5">
-                                <ModelIcon className="w-4 h-4" />
-                                <span className="font-medium text-gray-700 dark:text-zinc-300">{modelName}</span>
+                                <LanguageIcon className="w-4 h-4" />
+                                <span>{session.language.toUpperCase()}</span>
                             </div>
-                        )}
+                            {session.durationSec && (
+                                <div className="flex items-center gap-1.5">
+                                    <ClockIcon className="w-4 h-4" />
+                                    <span>{formatTime(session.durationSec)}</span>
+                                </div>
+                            )}
+                             {session.aiModel && (
+                                <div className="flex items-center gap-1.5">
+                                    <ModelIcon className="w-4 h-4" />
+                                    <span className="font-medium text-gray-700 dark:text-zinc-300">{modelName}</span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="mt-4">
+                            <ExportButtons sessionId={session.id} session={session} activeTab={activeTab} />
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="flex-shrink-0 flex flex-wrap items-center justify-end gap-3">
-                <StatusBadge status={session.status}/>
-                {session.audioBlob && (
-                    <button 
-                        onClick={handleDownloadAudio}
-                        className="p-2 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white transition-colors rounded-lg border border-gray-300/70 dark:border-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
-                        title={STRINGS[lang].downloadAudio}
-                    >
-                        <DownloadIcon className="w-5 h-5" />
-                    </button>
-                )}
-                <ExportButtons sessionId={session.id} session={session} />
             </div>
         </header>
 
-        <div className="flex items-center gap-2 p-1 bg-gray-200 dark:bg-zinc-800/50 rounded-lg border border-gray-300/70 dark:border-zinc-700/50 mb-6 self-start">
-            <button onClick={() => setActiveTab('summary')} className={tabClasses('summary')}>{STRINGS[lang].summaryTab}</button>
-            <button onClick={() => setActiveTab('raw')} className={tabClasses('raw')}>{STRINGS[lang].rawTab}</button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-2 p-1 bg-gray-200 dark:bg-zinc-800/50 rounded-lg border border-gray-300/70 dark:border-zinc-700/50 self-start">
+                {session.doSummary && <button onClick={() => setActiveTab('summary')} className={tabClasses('summary')}>{STRINGS[lang].summaryTab}</button>}
+                <button onClick={() => setActiveTab('raw')} className={tabClasses('raw')}>{STRINGS[lang].rawTab}</button>
+            </div>
+            <div className="flex items-center gap-2 self-start sm:self-center">
+                 <button
+                    onClick={handleFormatForNotion}
+                    disabled={isFormatting || !session.artifacts?.rawTranscript}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border-indigo-200 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isFormatting ? <Spinner className="w-4 h-4" /> : <NotionIcon className="w-4 h-4" />}
+                    <span>{isFormatting ? STRINGS[lang].formattingForNotion : STRINGS[lang].formatForNotion}</span>
+                </button>
+                <CopyButton textToCopy={textToCopy} />
+            </div>
         </div>
         
+        {formatError && <p className="text-red-500 dark:text-red-400 text-sm text-center mb-4">{formatError}</p>}
+
         <div className="bg-white dark:bg-black/20 p-4 sm:p-6 rounded-lg min-h-[300px] border border-gray-200 dark:border-zinc-800/50">
-            {activeTab === 'summary' && (
-                <div className="relative">
-                    {session.artifacts?.summaryMd && (
-                        <div className="absolute top-0 right-0">
-                            <CopyButton textToCopy={session.artifacts.summaryMd} />
-                        </div>
-                    )}
-                    <div className="prose dark:prose-invert max-w-none prose-p:text-gray-600 dark:prose-p:text-zinc-300 prose-headings:text-gray-900 dark:prose-headings:text-white prose-blockquote:text-gray-500 dark:prose-blockquote:text-zinc-400">
-                        {session.artifacts?.summaryMd ? 
-                            <div dangerouslySetInnerHTML={{ __html: session.artifacts.summaryMd.replace(/\n/g, '<br />') }}/> :
-                            <p className="text-gray-500 dark:text-zinc-500 italic">{STRINGS[lang].noSummary}</p>
-                        }
-                    </div>
+            {activeTab === 'summary' && session.doSummary && (
+                <div className="prose dark:prose-invert max-w-none prose-p:text-gray-600 dark:prose-p:text-zinc-300 prose-headings:text-gray-900 dark:prose-headings:text-white prose-blockquote:text-gray-500 dark:prose-blockquote:text-zinc-400">
+                    {session.artifacts?.summaryMd ? 
+                        <div dangerouslySetInnerHTML={{ __html: session.artifacts.summaryMd.replace(/\n/g, '<br />') }}/> :
+                        <p className="text-gray-500 dark:text-zinc-500 italic">{STRINGS[lang].noSummary}</p>
+                    }
                 </div>
             )}
             {activeTab === 'raw' && (
-                <div className="relative">
-                    {session.artifacts?.rawTranscript && (
-                        <div className="absolute top-0 right-0">
-                            <CopyButton textToCopy={session.artifacts.rawTranscript} />
-                        </div>
-                    )}
-                    <div>
-                        {session.artifacts?.rawTranscript ? 
-                            <pre className="whitespace-pre-wrap font-mono text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">
-                                {session.artifacts.rawTranscript}
-                            </pre> :
-                            <p className="text-gray-500 dark:text-zinc-500 italic">{STRINGS[lang].noTranscription}</p>
-                        }
-                    </div>
+                <div>
+                    {session.artifacts?.rawTranscript ? 
+                        <pre className="whitespace-pre-wrap font-mono text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">
+                            {session.artifacts.rawTranscript}
+                        </pre> :
+                        <p className="text-gray-500 dark:text-zinc-500 italic">{STRINGS[lang].noTranscription}</p>
+                    }
                 </div>
             )}
         </div>

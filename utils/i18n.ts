@@ -74,6 +74,9 @@ export const STRINGS: Record<Language, Record<string, string>> = {
     pinSession: 'Przypnij sesję',
     unpinSession: 'Odepnij sesję',
     editTitleTooltip: 'Kliknij, aby edytować tytuł',
+    formatForNotion: 'Formatuj dla Notion',
+    formattingForNotion: 'Formatowanie...',
+    formatError: 'Nie udało się sformatować tekstu. Spróbuj ponownie.',
   },
   en: {
     appName: 'meetsnap',
@@ -148,5 +151,8 @@ export const STRINGS: Record<Language, Record<string, string>> = {
     pinSession: 'Pin session',
     unpinSession: 'Unpin session',
     editTitleTooltip: 'Click to edit title',
+    formatForNotion: 'Format for Notion',
+    formattingForNotion: 'Formatting...',
+    formatError: 'Failed to format the text. Please try again.',
   },
 };

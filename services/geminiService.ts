@@ -62,6 +62,38 @@ function createSegments(text: string, duration: number): Segment[] {
     return segments;
 }
 
+export const formatForNotion = async (
+    transcript: string,
+    model: AiModel,
+  ): Promise<string> => {
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      throw new Error("API key is missing.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
+  
+    const prompt = `Directly reformat the following transcript into a structured summary in Markdown format, suitable for Notion. Do not include any introductory phrases, conversational text, or explanations. The output should start immediately with the first Markdown heading.
+
+The output must contain these sections with clear headings (e.g., using '##' or '###'):
+1.  **TL;DR:** A concise summary of the entire meeting in 3-4 sentences.
+2.  **Key Discussion Points:** A bulleted list summarizing the main topics discussed.
+3.  **Action Items:** A bulleted list of tasks or follow-ups. If an assignee is mentioned, specify who is responsible (e.g., "- [ ] **User:** Action description.").
+
+Transcript:
+---
+${transcript}
+---`;
+  
+    const selectedModel = MODEL_MAP[model] || 'gemini-2.5-flash';
+  
+    const response = await ai.models.generateContent({
+        model: selectedModel,
+        contents: prompt,
+    });
+    
+    return response.text;
+  };
+
 
 export const processAudioFile = async (
   session: Session,

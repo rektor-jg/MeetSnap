@@ -39,15 +39,13 @@ export const toVTT = (segments: Segment[]): string => {
 };
 
 // toMarkdown
-export const toMarkdown = (session: Session, lang: Language): string => {
+export const toMarkdown = (session: Session, lang: Language, activeTab: 'summary' | 'raw'): string => {
     let content = `# ${session.title || `Session from ${new Date(session.createdAt).toLocaleString()}`}\n\n`;
 
-    if (session.artifacts?.summaryMd) {
+    if (activeTab === 'summary' && session.artifacts?.summaryMd) {
         content += `## ${STRINGS[lang].exportSummary}\n\n`;
-        content += `${session.artifacts.summaryMd}\n\n`;
-    }
-
-    if (session.artifacts?.rawTranscript) {
+        content += session.artifacts.summaryMd;
+    } else if (session.artifacts?.rawTranscript) { // Default to raw if on raw tab or no summary
         content += `## ${STRINGS[lang].exportTranscription}\n\n`;
         content += session.artifacts.rawTranscript;
     }
@@ -56,8 +54,11 @@ export const toMarkdown = (session: Session, lang: Language): string => {
 };
 
 // toTXT
-export const toTXT = (rawTranscript?: string): string => {
-  return rawTranscript || '';
+export const toTXT = (session: Session, activeTab: 'summary' | 'raw'): string => {
+  if (activeTab === 'summary' && session.artifacts?.summaryMd) {
+    return session.artifacts.summaryMd;
+  }
+  return session.artifacts?.rawTranscript || '';
 };
 
 // Export Handlers
@@ -73,12 +74,12 @@ export const exportToVTT = (session: Session) => {
   triggerDownload(content, `${session.id}.vtt`, 'text/vtt');
 };
 
-export const exportToMarkdown = (session: Session, lang: Language) => {
-  const content = toMarkdown(session, lang);
+export const exportToMarkdown = (session: Session, lang: Language, activeTab: 'summary' | 'raw') => {
+  const content = toMarkdown(session, lang, activeTab);
   triggerDownload(content, `${session.id}.md`, 'text/markdown');
 };
 
-export const exportToTXT = (session: Session) => {
-  const content = toTXT(session.artifacts?.rawTranscript);
+export const exportToTXT = (session: Session, activeTab: 'summary' | 'raw') => {
+  const content = toTXT(session, activeTab);
   triggerDownload(content, `${session.id}.txt`, 'text/plain');
 };

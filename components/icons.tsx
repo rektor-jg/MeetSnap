@@ -152,3 +152,10 @@ export const EditIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
     </svg>
 );
+
+export const NotionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M12.5714 8.24229L15.4286 15.7577H12.5714V8.24229Z" />
+        <path fillRule="evenodd" clipRule="evenodd" d="M3 3H21V21H3V3ZM8.28571 6.81371V17.1863H5.14286V6.81371H8.28571ZM18.8571 6.81371H15.7143V17.1863H18.8571V6.81371ZM9.71429 6.81371H11.1429V10.6709L14.2857 6.81371H14.2857L9.71429 17.1863V12.8279H11.1429L12.5714 14.8817V9.67086L9.71429 13.528V6.81371Z" />
+    </svg>
+);
