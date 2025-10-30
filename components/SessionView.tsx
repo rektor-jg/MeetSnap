@@ -84,8 +84,8 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
 
   return (
     <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl shadow-lg dark:shadow-2xl dark:shadow-black/30 p-4 sm:p-6">
-        <header className="flex flex-col sm:flex-row justify-between items-start pb-4 border-b border-gray-200 dark:border-zinc-800/50 mb-6 gap-4">
-            <div className="flex items-start gap-3 sm:gap-4 w-full">
+        <header className="flex flex-row flex-wrap items-center justify-between gap-x-4 gap-y-3 pb-4 border-b border-gray-200 dark:border-zinc-800/50 mb-6">
+            <div className="flex items-start gap-3 sm:gap-4 flex-grow min-w-0">
                 <button
                     onClick={() => setView({ type: 'history' })}
                     className="p-2 rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-zinc-900 mt-1"
@@ -124,20 +124,18 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col items-end gap-3 self-stretch sm:self-auto w-full sm:w-auto">
+            <div className="flex-shrink-0 flex flex-wrap items-center justify-end gap-3">
                 <StatusBadge status={session.status}/>
-                <div className="flex items-center gap-2 justify-end w-full">
-                    {session.audioBlob && (
-                        <button 
-                            onClick={handleDownloadAudio}
-                            className="p-2 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white transition-colors rounded-lg border border-gray-300/70 dark:border-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
-                            title={STRINGS[lang].downloadAudio}
-                        >
-                            <DownloadIcon className="w-5 h-5" />
-                        </button>
-                    )}
-                    <ExportButtons sessionId={session.id} session={session} />
-                </div>
+                {session.audioBlob && (
+                    <button 
+                        onClick={handleDownloadAudio}
+                        className="p-2 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 hover:text-black dark:hover:text-white transition-colors rounded-lg border border-gray-300/70 dark:border-zinc-700/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
+                        title={STRINGS[lang].downloadAudio}
+                    >
+                        <DownloadIcon className="w-5 h-5" />
+                    </button>
+                )}
+                <ExportButtons sessionId={session.id} session={session} />
             </div>
         </header>
 
