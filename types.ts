@@ -15,8 +15,10 @@ export interface Segment {
 }
 
 export interface Artifacts {
-  rawTranscript: string;
-  segments: Segment[];
+  // FIX: Made rawTranscript optional to align with reducer logic, which can create partial Artifacts objects during state updates.
+  rawTranscript?: string;
+  // FIX: Made segments optional to align with reducer logic.
+  segments?: Segment[];
   summaryMd?: string;
 }
 
@@ -32,6 +34,7 @@ export interface Session {
   error?: string;
   doSummary: boolean;
   aiModel: AiModel;
+  isPinned?: boolean;
 }
 
 export type AppView = 

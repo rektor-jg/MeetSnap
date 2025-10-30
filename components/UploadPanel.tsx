@@ -1,17 +1,18 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useContext } from 'react';
 import type { Language, AiModel } from '../types';
 import { MAX_FILE_SIZE_BYTES, ACCEPTED_AUDIO_TYPES } from '../constants';
 import { UploadIcon, YoutubeIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
+import { SettingsContext } from '../context/SettingsContext';
 
 interface UploadPanelProps {
   onSubmit: (file: File, language: Language, doSummary: boolean, aiModel: AiModel) => void;
-  lang: Language;
 }
 
 type UploadMode = 'file' | 'youtube';
 
-export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit, lang }) => {
+export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
+  const { lang } = useContext(SettingsContext);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>('en');
@@ -138,8 +139,8 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit, lang }) => {
       
       {error && <p className="text-red-500 dark:text-red-400 text-sm text-center">{error}</p>}
 
-      <div className="w-full flex flex-col sm:flex-row items-center sm:justify-between gap-x-8 gap-y-4 pt-6 border-t border-gray-200 dark:border-zinc-800/50 mt-6">
-        <div className="flex items-center gap-2">
+      <div className="w-full flex flex-col items-center justify-between gap-4 pt-6 border-t border-gray-200 dark:border-zinc-800/50 mt-4 sm:flex-row">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
             <label htmlFor="lang-select-upload" className="font-medium text-gray-700 dark:text-zinc-300 flex-shrink-0">{STRINGS[lang].language}:</label>
             <select
                 id="lang-select-upload"
@@ -152,7 +153,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit, lang }) => {
             </select>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
             <label htmlFor="model-select-upload" className="font-medium text-gray-700 dark:text-zinc-300 flex-shrink-0">{STRINGS[lang].aiModel}:</label>
             <select
                 id="model-select-upload"

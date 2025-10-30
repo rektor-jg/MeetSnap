@@ -15,13 +15,23 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const streamsRef = useRef<MediaStream[]>([]);
 
-  const startTimer = useCallback(() => {
-    timerIntervalRef.current = window.setInterval(() => {
-      setTime(prevTime => prevTime + 1);
-    }, 1000);
+  const cleanup = useCallback(() => {
+    // Stop all media tracks
+    streamsRef.current.forEach(stream => stream.getTracks().forEach(track => track.stop()));
+    streamsRef.current = [];
+    
+    // Ensure MediaRecorder is stopped and listeners are removed
+    if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.ondataavailable = null;
+        mediaRecorderRef.current.onstop = null;
+        if (mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+        }
+    }
+    mediaRecorderRef.current = null;
+    chunksRef.current = [];
   }, []);
 
   const stopTimer = useCallback(() => {
@@ -30,21 +40,14 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
       timerIntervalRef.current = null;
     }
   }, []);
-  
-  const cleanup = useCallback(() => {
-    streamsRef.current.forEach(stream => stream.getTracks().forEach(track => track.stop()));
-    streamsRef.current = [];
-    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close().catch(console.error);
-    }
-    audioContextRef.current = null;
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-    }
-    mediaRecorderRef.current = null;
-    chunksRef.current = [];
-  }, []);
 
+  const startTimer = useCallback(() => {
+    stopTimer(); // Ensure no multiple timers are running
+    timerIntervalRef.current = window.setInterval(() => {
+      setTime(prevTime => prevTime + 1);
+    }, 1000);
+  }, [stopTimer]);
+  
   const handleRecordingError = useCallback((err: unknown) => {
     console.error("Recording Error:", err);
     if (err instanceof DOMException) {
@@ -61,65 +64,47 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
       setError({ type: 'UNKNOWN' });
     }
     setStatus('idle');
-  }, []);
+    cleanup();
+  }, [cleanup]);
 
   const start = useCallback(async () => {
     setError(null);
+    setTime(0);
     cleanup(); // Clean up any previous state
-    let displayStream: MediaStream | null = null;
+    const acquiredStreams: MediaStream[] = [];
     
     try {
-      // Attempt 1: Audio only (preferred, more efficient)
-      displayStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: false });
-    } catch (err) {
-      if (err instanceof DOMException && (err.name === 'NotSupportedError' || err.name === 'TypeError')) {
-        console.warn('Audio-only display capture not supported. Falling back to video+audio.');
-        try {
-          // Attempt 2: Fallback to audio + video (broader compatibility)
-          displayStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
-        } catch (fallbackErr) {
-          handleRecordingError(fallbackErr);
-          cleanup();
-          return;
-        }
-      } else {
-        handleRecordingError(err);
-        cleanup();
-        return;
-      }
-    }
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        audio: true,
+        // Request video but immediately stop the track. This improves compatibility.
+        video: true, 
+      });
+      acquiredStreams.push(displayStream);
 
-    try {
-      if (!displayStream) throw new Error("Stream capture failed.");
-
-      // Critical check: Ensure the user shared audio.
       if (displayStream.getAudioTracks().length === 0) {
-        displayStream.getTracks().forEach(track => track.stop()); // Stop useless stream
         throw new Error('NO_AUDIO_TRACK');
       }
-      
-      const userStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      streamsRef.current = [displayStream, userStream];
 
-      // Stop the video track immediately as we don't need it.
+      const userStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      acquiredStreams.push(userStream);
+      
+      streamsRef.current = acquiredStreams;
+
+      // We don't need the video, so stop the track to save resources
       displayStream.getVideoTracks().forEach(track => track.stop());
       
-      const context = new AudioContext();
-      audioContextRef.current = context;
+      const audioContext = new AudioContext();
+      const destination = audioContext.createMediaStreamDestination();
       
-      const source1 = context.createMediaStreamSource(displayStream);
-      const source2 = context.createMediaStreamSource(userStream);
-      const destination = context.createMediaStreamDestination();
-      
-      source1.connect(destination);
-      source2.connect(destination);
+      // Mix system audio and microphone audio
+      const systemSource = audioContext.createMediaStreamSource(displayStream);
+      systemSource.connect(destination);
+
+      const micSource = audioContext.createMediaStreamSource(userStream);
+      micSource.connect(destination);
       
       const combinedStream = destination.stream;
       
-      // Add microphone track to combined stream so it has tracks
-      userStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
-
       setStatus('recording');
       const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = mediaRecorder;
@@ -134,23 +119,23 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         onStop(blob);
         setStatus('stopped');
-        cleanup();
+        cleanup(); // Perform cleanup after everything is done
       };
       
       mediaRecorder.start();
-      setTime(0);
       startTimer();
 
     } catch (err) {
+      // If any part of the stream acquisition fails, stop all tracks that were successfully acquired.
+      acquiredStreams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
       handleRecordingError(err);
-      cleanup();
     }
   }, [onStop, startTimer, cleanup, handleRecordingError]);
 
   const stop = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      // The onstop handler will trigger the rest of the cleanup flow
       mediaRecorderRef.current.stop();
-      // onstop handler will call cleanup
       stopTimer();
     }
   }, [stopTimer]);
@@ -172,7 +157,7 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
   }, [status, startTimer]);
 
   useEffect(() => {
-    // Cleanup on component unmount
+    // Final cleanup on component unmount
     return () => {
       stopTimer();
       cleanup();

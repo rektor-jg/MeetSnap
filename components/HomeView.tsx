@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
-import type { AppView, Language, Session, AiModel } from '../types';
+import React, { useState, useContext } from 'react';
+import type { AppView, Session, Language, AiModel } from '../types';
 import { RecordPanel } from './RecordPanel';
 import { UploadPanel } from './UploadPanel';
 import { STRINGS } from '../utils/i18n';
 import { StatusDisplay } from './StatusDisplay';
+import { SettingsContext } from '../context/SettingsContext';
 
 interface HomeViewProps {
-  onSubmit: (blob: Blob, language: Language, doSummary: boolean, aiModel: AiModel) => void;
+  onSubmit: (params: { blob: Blob, language: Language, doSummary: boolean, aiModel: AiModel }) => Promise<Session>;
   setView: (view: AppView) => void;
-  lang: Language;
   sessions: Session[];
 }
 
 type Tab = 'record' | 'upload';
 
-export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, lang, sessions }) => {
+export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, sessions }) => {
   const [activeTab, setActiveTab] = useState<Tab>('record');
+  const { lang } = useContext(SettingsContext);
+
+  const handleProcessRequest = async (blob: Blob, language: Language, doSummary: boolean, aiModel: AiModel) => {
+    const newSession = await onSubmit({ blob, language, doSummary, aiModel });
+    setView({ type: 'session', sessionId: newSession.id });
+  };
 
   const tabClasses = (tabName: Tab) => 
     `w-full py-2.5 text-sm font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900 ${
@@ -27,8 +33,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, lang, ses
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-400 mb-2">{STRINGS[lang].appHeadline}</h2>
-        <p className="text-gray-500 dark:text-gray-400">
+        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-400 mb-2">{STRINGS[lang].appHeadline}</h2>
+        <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
           {STRINGS[lang].appSubhead}
         </p>
       </div>
@@ -45,11 +51,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, lang, ses
             </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {activeTab === 'record' ? (
-            <RecordPanel onSubmit={onSubmit} lang={lang} />
+            <RecordPanel onSubmit={handleProcessRequest} />
           ) : (
-            <UploadPanel onSubmit={onSubmit} lang={lang} />
+            <UploadPanel onSubmit={handleProcessRequest} />
           )}
         </div>
       </div>
@@ -69,11 +75,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, lang, ses
                         onClick={() => setView({type: 'session', sessionId: session.id})}
                         className="w-full text-left bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 p-4 rounded-xl flex justify-between items-center hover:bg-gray-100 dark:hover:bg-zinc-800/70 hover:border-gray-300 dark:hover:border-zinc-700 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black"
                       >
-                          <div>
+                          <div className="min-w-0">
                               <p className="font-semibold text-gray-800 dark:text-white truncate">{session.title || 'Untitled Session'}</p>
                               <p className="text-sm text-gray-500 dark:text-zinc-400">{new Date(session.createdAt).toLocaleDateString(lang, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                           </div>
-                          <StatusDisplay status={session.status} lang={lang} />
+                          <div className="flex-shrink-0 ml-2">
+                            <StatusDisplay status={session.status} />
+                          </div>
                       </button>
                   ))}
               </div>

@@ -1,15 +1,16 @@
-import React from 'react';
-import type { Session, Language } from '../types';
+import React, { useContext } from 'react';
+import type { Session } from '../types';
 import { exportToMarkdown, exportToSRT, exportToTXT, exportToVTT } from '../utils/exportUtils';
 import { STRINGS } from '../utils/i18n';
+import { SettingsContext } from '../context/SettingsContext';
 
 interface ExportButtonsProps {
   sessionId: string;
   session: Session;
-  lang: Language;
 }
 
-export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session, lang }) => {
+export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session }) => {
+  const { lang } = useContext(SettingsContext);
 
   const handleExport = (format: 'md' | 'srt' | 'vtt' | 'txt') => {
     switch (format) {
@@ -32,7 +33,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session
 
   return (
     <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-gray-500 dark:text-zinc-400 mr-2">{STRINGS[lang].export}:</span>
+        <span className="hidden sm:inline text-sm font-semibold text-gray-500 dark:text-zinc-400 mr-2">{STRINGS[lang].export}:</span>
         <div className="flex items-center rounded-lg border border-gray-300/70 dark:border-zinc-700/50 overflow-hidden">
             <button onClick={() => handleExport('md')} className={`${buttonClass} border-r border-gray-300/70 dark:border-zinc-700/50`}>MD</button>
             <button onClick={() => handleExport('srt')} className={`${buttonClass} border-r border-gray-300/70 dark:border-zinc-700/50`}>SRT</button>

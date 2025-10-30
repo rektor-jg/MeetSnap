@@ -1,17 +1,36 @@
-import React from 'react';
-import type { Session, AppView, Language } from '../types';
-import { formatTime } from '../utils/formatUtils';
+import React, { useState, useMemo, useContext } from 'react';
+import type { Session, AppView } from '../types';
 import { STRINGS } from '../utils/i18n';
-import { MeetsnapLogo } from './icons';
-import { StatusDisplay } from './StatusDisplay';
+import { MeetsnapLogo, ChevronLeftIcon } from './icons';
+import { SessionCard } from './SessionCard';
+import { SettingsContext } from '../context/SettingsContext';
 
 interface HistoryViewProps {
   sessions: Session[];
   setView: (view: AppView) => void;
-  lang: Language;
+  deleteSession: (id: string) => void;
+  togglePinSession: (id: string) => void;
 }
 
-export const HistoryView: React.FC<HistoryViewProps> = ({ sessions, setView, lang }) => {
+export const HistoryView: React.FC<HistoryViewProps> = ({ sessions, setView, deleteSession, togglePinSession }) => {
+  const { lang } = useContext(SettingsContext);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+
+  const filteredAndSortedSessions = useMemo(() => {
+    return sessions
+      .filter(session => 
+        (session.title || 'untitled').toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+  }, [sessions, searchTerm, sortOrder]);
+  
   if (sessions.length === 0) {
     return (
       <div className="text-center py-20 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl">
@@ -28,42 +47,60 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ sessions, setView, lan
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl shadow-lg dark:shadow-2xl dark:shadow-black/30 overflow-hidden">
-        <h2 className="text-2xl font-bold p-6 text-black dark:text-white">{STRINGS[lang].history}</h2>
-        <div className="overflow-x-auto">
-            <table className="min-w-full">
-                <thead className="border-b border-gray-200 dark:border-zinc-800/50 bg-gray-100/50 dark:bg-transparent">
-                    <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{STRINGS[lang].sessionHeaderStatus}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{STRINGS[lang].sessionHeaderTitle}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{STRINGS[lang].sessionHeaderDate}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{STRINGS[lang].sessionHeaderModel}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{STRINGS[lang].sessionHeaderDuration}</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{STRINGS[lang].sessionHeaderLanguage}</th>
-                        <th scope="col" className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-zinc-800/50">
-                    {sessions.map((session) => (
-                        <tr key={session.id} className="hover:bg-gray-100/70 dark:hover:bg-zinc-800/40 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm"><StatusDisplay status={session.status} lang={lang} /></td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-white">{session.title || '---'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400">{new Date(session.createdAt).toLocaleDateString(lang, { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400 capitalize">{session.aiModel}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400">{session.durationSec ? formatTime(session.durationSec) : '---'}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400">{session.language.toUpperCase()}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button
-                                    onClick={() => setView({ type: 'session', sessionId: session.id })}
-                                    className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
-                                >
-                                    {STRINGS[lang].open}
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+    <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl shadow-lg dark:shadow-2xl dark:shadow-black/30">
+        <header className="flex items-center gap-4 p-4 sm:p-6 border-b border-gray-200 dark:border-zinc-800/50">
+            <button
+                onClick={() => setView({ type: 'home' })}
+                className="p-2 rounded-full text-zinc-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 dark:focus:ring-offset-zinc-900"
+                aria-label={STRINGS[lang].backToHome}
+            >
+                <ChevronLeftIcon className="w-5 h-5" />
+            </button>
+            <h2 className="text-2xl font-bold text-black dark:text-white">{STRINGS[lang].history}</h2>
+        </header>
+
+        <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-zinc-800/50 flex flex-col sm:flex-row gap-4">
+            <input 
+                type="text"
+                placeholder={STRINGS[lang].searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full sm:flex-grow bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-black dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5"
+            />
+            <div className="flex items-center gap-2 flex-shrink-0">
+                <label htmlFor="sort-order" className="text-sm font-medium text-gray-700 dark:text-zinc-300">{STRINGS[lang].sortLabel}:</label>
+                <select 
+                    id="sort-order"
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                    className="w-full sm:w-auto bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-black dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5"
+                >
+                    <option value="newest">{STRINGS[lang].sortNewest}</option>
+                    <option value="oldest">{STRINGS[lang].sortOldest}</option>
+                </select>
+            </div>
+        </div>
+
+        <div className="p-4 sm:p-6 space-y-4">
+            {filteredAndSortedSessions.length > 0 ? (
+                filteredAndSortedSessions.map((session) => (
+                    <SessionCard 
+                        key={session.id} 
+                        session={session}
+                        onClick={() => setView({ type: 'session', sessionId: session.id })}
+                        onDelete={() => {
+                            if (window.confirm(STRINGS[lang].deleteSessionConfirmMessage)) {
+                                deleteSession(session.id);
+                            }
+                        }}
+                        onTogglePin={() => togglePinSession(session.id)}
+                    />
+                ))
+            ) : (
+                <div className="text-center py-10">
+                    <p className="text-gray-500 dark:text-zinc-400">{STRINGS[lang].noResults}</p>
+                </div>
+            )}
         </div>
     </div>
   );
