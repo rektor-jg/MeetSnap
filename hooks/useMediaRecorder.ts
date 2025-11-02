@@ -5,9 +5,14 @@ type Status = 'idle' | 'recording' | 'paused' | 'stopped';
 
 interface UseMediaRecorderProps {
   onStop: (blob: Blob) => void;
+  onDataAvailable?: (chunk: Blob) => void;
 }
 
-export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
+interface StartRecordingOptions {
+  includeMicrophone: boolean;
+}
+
+export const useMediaRecorder = ({ onStop, onDataAvailable }: UseMediaRecorderProps) => {
   const [status, setStatus] = useState<Status>('idle');
   const [time, setTime] = useState(0);
   const [error, setError] = useState<RecordingError | null>(null);
@@ -67,7 +72,7 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
     cleanup();
   }, [cleanup]);
 
-  const start = useCallback(async () => {
+  const start = useCallback(async ({ includeMicrophone }: StartRecordingOptions) => {
     setError(null);
     setTime(0);
     cleanup(); // Clean up any previous state
@@ -85,23 +90,30 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
         throw new Error('NO_AUDIO_TRACK');
       }
 
-      const userStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      acquiredStreams.push(userStream);
+      const audioContext = new AudioContext();
+      const destination = audioContext.createMediaStreamDestination();
+      
+      // Add system audio source
+      const systemSource = audioContext.createMediaStreamSource(displayStream);
+      systemSource.connect(destination);
+
+      // Conditionally add microphone audio source
+      if (includeMicrophone) {
+          try {
+            const userStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            acquiredStreams.push(userStream);
+            const micSource = audioContext.createMediaStreamSource(userStream);
+            micSource.connect(destination);
+          } catch (micError) {
+              console.warn("Could not get microphone stream. Recording will continue with system audio only.", micError);
+              // This is now a non-fatal error. The recording proceeds without the microphone.
+          }
+      }
       
       streamsRef.current = acquiredStreams;
 
       // We don't need the video, so stop the track to save resources
       displayStream.getVideoTracks().forEach(track => track.stop());
-      
-      const audioContext = new AudioContext();
-      const destination = audioContext.createMediaStreamDestination();
-      
-      // Mix system audio and microphone audio
-      const systemSource = audioContext.createMediaStreamSource(displayStream);
-      systemSource.connect(destination);
-
-      const micSource = audioContext.createMediaStreamSource(userStream);
-      micSource.connect(destination);
       
       const combinedStream = destination.stream;
       
@@ -112,6 +124,7 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           chunksRef.current.push(event.data);
+          onDataAvailable?.(event.data);
         }
       };
 
@@ -122,7 +135,8 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
         cleanup(); // Perform cleanup after everything is done
       };
       
-      mediaRecorder.start();
+      // Request data every 3 seconds to get chunks for language detection
+      mediaRecorder.start(3000);
       startTimer();
 
     } catch (err) {
@@ -130,7 +144,7 @@ export const useMediaRecorder = ({ onStop }: UseMediaRecorderProps) => {
       acquiredStreams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
       handleRecordingError(err);
     }
-  }, [onStop, startTimer, cleanup, handleRecordingError]);
+  }, [onStop, onDataAvailable, startTimer, cleanup, handleRecordingError]);
 
   const stop = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {

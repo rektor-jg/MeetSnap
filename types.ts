@@ -40,4 +40,5 @@ export interface Session {
 export type AppView = 
   | { type: 'home' }
   | { type: 'session'; sessionId: string }
-  | { type: 'history' };
+  | { type: 'history' }
+  | { type: 'admin' };

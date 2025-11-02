@@ -4,6 +4,8 @@ import { MAX_FILE_SIZE_BYTES, ACCEPTED_AUDIO_TYPES } from '../constants';
 import { UploadIcon, YoutubeIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
 import { SettingsContext } from '../context/SettingsContext';
+import { detectLanguageFromAudio } from '../services/geminiService';
+import { Spinner } from './Spinner';
 
 interface UploadPanelProps {
   onSubmit: (file: File, language: Language, doSummary: boolean, aiModel: AiModel) => void;
@@ -21,6 +23,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
   const [uploadMode, setUploadMode] = useState<UploadMode>('file');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [aiModel, setAiModel] = useState<AiModel>('fast');
+  const [isDetecting, setIsDetecting] = useState(false);
 
 
   const validateFile = (selectedFile: File): boolean => {
@@ -38,9 +41,21 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
     return true;
   };
 
-  const handleFileChange = (selectedFile: File | null) => {
+  const handleFileChange = async (selectedFile: File | null) => {
     if (selectedFile && validateFile(selectedFile)) {
       setFile(selectedFile);
+      
+      setIsDetecting(true);
+      try {
+        const detectedLang = await detectLanguageFromAudio(selectedFile);
+        if (detectedLang) {
+          setLanguage(detectedLang);
+        }
+      } catch (error) {
+        console.error("Language detection failed in UploadPanel:", error);
+      } finally {
+        setIsDetecting(false);
+      }
     }
   };
 
@@ -151,6 +166,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
                 <option value="en">English</option>
                 <option value="pl">Polski</option>
             </select>
+            {isDetecting && <Spinner className="w-5 h-5 text-indigo-500" />}
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">

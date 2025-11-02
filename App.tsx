@@ -3,11 +3,13 @@ import type { AppView, Session } from './types';
 import { HomeView } from './components/HomeView';
 import { SessionView } from './components/SessionView';
 import { HistoryView } from './components/HistoryView';
+import { AdminView } from './components/AdminView';
 import { useSessions } from './hooks/useSessions';
 import { EasterEgg } from './components/EasterEgg';
 import { Layout } from './components/Layout';
 import { SettingsProvider, useSettings } from './context/SettingsContext';
 import { useMatrixEasterEgg } from './hooks/useMatrixEasterEgg';
+import { useAdminEasterEgg } from './hooks/useAdminEasterEgg';
 
 const AppContent: React.FC = () => {
   const [view, setView] = useState<AppView>({ type: 'home' });
@@ -16,11 +18,16 @@ const AppContent: React.FC = () => {
     updateSession, 
     deleteSession, 
     togglePinSession, 
-    createAndProcessSession 
+    createAndProcessSession,
+    deleteAllSessions,
+    reprocessSession,
+    importSessions
   } = useSessions();
+  
   const { lang } = useSettings();
 
   const { isEasterEggActive, isMatrixTheme, activateMatrixTheme, handleThemeToggle } = useMatrixEasterEgg();
+  const { isAdminUnlocked, handleAdminUnlockClick } = useAdminEasterEgg();
   
   const handleDeleteSession = (id: string) => {
     deleteSession(id);
@@ -50,6 +57,15 @@ const AppContent: React.FC = () => {
         return <SessionView session={session} setView={setView} updateSession={updateSession} />;
       case 'history':
         return <HistoryView sessions={sortedSessions} setView={setView} deleteSession={handleDeleteSession} togglePinSession={togglePinSession} />;
+      case 'admin':
+        return <AdminView 
+                  sessions={sortedSessions} 
+                  setView={setView}
+                  deleteSession={handleDeleteSession}
+                  reprocessSession={reprocessSession}
+                  deleteAllSessions={deleteAllSessions}
+                  importSessions={importSessions}
+                />;
       default:
         return <HomeView onSubmit={createAndProcessSession} setView={setView} sessions={sortedSessions.slice(0, 3)} />;
     }
@@ -57,7 +73,13 @@ const AppContent: React.FC = () => {
 
   return (
     <>
-      <Layout setView={setView} onThemeToggle={handleThemeToggle} isMatrix={isMatrixTheme}>
+      <Layout 
+        setView={setView} 
+        onThemeToggle={handleThemeToggle} 
+        isMatrix={isMatrixTheme}
+        onAdminUnlockClick={handleAdminUnlockClick}
+        isAdminUnlocked={isAdminUnlocked}
+      >
         <main className="w-full">
             {renderView()}
         </main>

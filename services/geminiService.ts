@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import type { Session, Segment, AiModel } from '../types';
+import type { Session, Segment, AiModel, Language } from '../types';
 
 // Helper to convert Blob to base64
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -93,6 +93,53 @@ ${transcript}
     
     return response.text;
   };
+
+/**
+ * Detects the language from a short audio blob.
+ */
+export const detectLanguageFromAudio = async (
+  audioBlob: Blob,
+): Promise<Language | null> => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.error("API key is missing for language detection.");
+    return null;
+  }
+  
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const audioBase64 = await blobToBase64(audioBlob);
+    const audioMimeType = audioBlob.type.startsWith('audio/') ? audioBlob.type : 'audio/webm';
+    
+    const audioPart = {
+      inlineData: {
+          mimeType: audioMimeType,
+          data: audioBase64
+      },
+    };
+    
+    const prompt = `Detect the primary language spoken in this audio. Respond ONLY with the two-letter ISO 639-1 code. Valid responses are 'en' or 'pl'. If you cannot determine the language or it is not one of the valid options, respond with 'unknown'.`;
+    
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: { parts: [{text: prompt}, audioPart] },
+    });
+    
+    const detectedLang = response.text.trim().toLowerCase();
+    
+    if (detectedLang === 'en' || detectedLang === 'pl') {
+      console.log(`Language detected: ${detectedLang}`);
+      return detectedLang;
+    }
+
+    console.warn(`Unsupported language detected or detection failed. Response: "${detectedLang}"`);
+    return null;
+
+  } catch (error) {
+    console.error("Error during language detection:", error);
+    return null;
+  }
+};
 
 
 export const processAudioFile = async (

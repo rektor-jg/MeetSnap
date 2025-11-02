@@ -7,7 +7,8 @@ type Action =
   | { type: 'SET_SESSIONS'; payload: Record<string, Session> }
   | { type: 'ADD_OR_UPDATE'; payload: Session }
   | { type: 'DELETE'; payload: string }
-  | { type: 'TOGGLE_PIN'; payload: string };
+  | { type: 'TOGGLE_PIN'; payload: string }
+  | { type: 'DELETE_ALL' };
 
 // Reducer function to manage session state
 const sessionsReducer = (state: Record<string, Session>, action: Action): Record<string, Session> => {
@@ -39,6 +40,9 @@ const sessionsReducer = (state: Record<string, Session>, action: Action): Record
             ...state,
             [action.payload]: { ...session, isPinned: !session.isPinned },
         };
+    }
+    case 'DELETE_ALL': {
+        return {};
     }
     default:
       return state;
@@ -191,6 +195,49 @@ export const useSessions = () => {
     dispatch({ type: 'TOGGLE_PIN', payload: id });
   }, []);
 
+  const deleteAllSessions = useCallback(() => {
+    if (window.confirm("Are you sure you want to delete ALL sessions? This action cannot be undone.")) {
+      dispatch({ type: 'DELETE_ALL' });
+    }
+  }, []);
+
+  const reprocessSession = useCallback(async (id: string) => {
+    const session = sessions[id];
+    if (!session) {
+      console.error(`Session with id ${id} not found.`);
+      alert(`Session with id ${id} not found.`);
+      return;
+    }
+    if (!session.audioBlob) {
+      alert("Cannot reprocess session: Original audio data is not available. Reprocessing is only possible for sessions created in the current browser session before a refresh.");
+      return;
+    }
+
+    alert(`Reprocessing session: ${session.title || session.id}`);
+    try {
+      await processAudioFile(session, (updates) => updateSession(id, updates));
+    } catch (err) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred during reprocessing.';
+      updateSession(id, { status: 'ERROR', error: errorMessage });
+    }
+  }, [sessions, updateSession]);
+
+  const importSessions = useCallback((sessionsData: Record<string, Session>) => {
+    if (typeof sessionsData !== 'object' || sessionsData === null || Array.isArray(sessionsData)) {
+      alert('Invalid import file format. Expected a JSON object of sessions.');
+      return;
+    }
+    // A simple check to see if the structure looks right
+    const firstKey = Object.keys(sessionsData)[0];
+    if (firstKey && (!sessionsData[firstKey].id || !sessionsData[firstKey].createdAt)) {
+        alert('Invalid import file structure. Session objects appear to be malformed.');
+        return;
+    }
+    dispatch({ type: 'SET_SESSIONS', payload: sessionsData });
+    alert('Sessions imported successfully.');
+  }, []);
+
   const createAndProcessSession = async (
     { blob, language, doSummary, aiModel }: { blob: Blob; language: Language; doSummary: boolean; aiModel: AiModel }
   ): Promise<Session> => {
@@ -218,5 +265,5 @@ export const useSessions = () => {
     return newSession;
   };
 
-  return { sessions, updateSession, deleteSession, togglePinSession, createAndProcessSession };
+  return { sessions, updateSession, deleteSession, togglePinSession, createAndProcessSession, deleteAllSessions, reprocessSession, importSessions };
 };

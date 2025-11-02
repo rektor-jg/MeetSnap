@@ -77,6 +77,7 @@ export const STRINGS: Record<Language, Record<string, string>> = {
     formatForNotion: 'Formatuj dla Notion',
     formattingForNotion: 'Formatowanie...',
     formatError: 'Nie udało się sformatować tekstu. Spróbuj ponownie.',
+    includeMicrophone: 'Dołącz mikrofon',
   },
   en: {
     appName: 'meetsnap',
@@ -154,5 +155,6 @@ export const STRINGS: Record<Language, Record<string, string>> = {
     formatForNotion: 'Format for Notion',
     formattingForNotion: 'Formatting...',
     formatError: 'Failed to format the text. Please try again.',
+    includeMicrophone: 'Include microphone',
   },
 };
