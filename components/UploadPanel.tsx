@@ -1,14 +1,14 @@
 import React, { useState, useCallback, useContext } from 'react';
 import type { Language, AiModel } from '../types';
 import { MAX_FILE_SIZE_BYTES, ACCEPTED_AUDIO_TYPES } from '../constants';
-import { UploadIcon, YoutubeIcon } from './icons';
+import { UploadIcon, YoutubeIcon, MusicalNoteIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
 import { SettingsContext } from '../context/SettingsContext';
 import { detectLanguageFromAudio } from '../services/geminiService';
-import { Spinner } from './Spinner';
+import { SessionSettings } from './SessionSettings';
 
 interface UploadPanelProps {
-  onSubmit: (file: File, language: Language, doSummary: boolean, aiModel: AiModel) => void;
+  onSubmit: (params: { file?: File; youtubeUrl?: string; language: Language; doSummary: boolean; aiModel: AiModel }) => void;
 }
 
 type UploadMode = 'file' | 'youtube';
@@ -17,7 +17,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
   const { lang } = useContext(SettingsContext);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('auto');
   const [doSummary, setDoSummary] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadMode, setUploadMode] = useState<UploadMode>('file');
@@ -45,16 +45,18 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
     if (selectedFile && validateFile(selectedFile)) {
       setFile(selectedFile);
       
-      setIsDetecting(true);
-      try {
-        const detectedLang = await detectLanguageFromAudio(selectedFile);
-        if (detectedLang) {
-          setLanguage(detectedLang);
+      if (language === 'auto') {
+        setIsDetecting(true);
+        try {
+          const detectedLang = await detectLanguageFromAudio(selectedFile);
+          if (detectedLang) {
+            setLanguage(detectedLang);
+          }
+        } catch (error) {
+          console.error("Language detection failed in UploadPanel:", error);
+        } finally {
+          setIsDetecting(false);
         }
-      } catch (error) {
-        console.error("Language detection failed in UploadPanel:", error);
-      } finally {
-        setIsDetecting(false);
       }
     }
   };
@@ -67,7 +69,7 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
       handleFileChange(event.dataTransfer.files[0]);
       event.dataTransfer.clearData();
     }
-  }, [lang]);
+  }, [lang, language]);
 
   const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -86,12 +88,18 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
     setIsDragging(false);
   };
 
+  const isValidYoutubeUrl = (url: string): boolean => {
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=[\w-]+|youtu\.be\/[\w-]+)/;
+    return youtubeRegex.test(url);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (uploadMode === 'file' && file) {
-      onSubmit(file, language, doSummary, aiModel);
+      onSubmit({ file, language, doSummary, aiModel });
+    } else if (uploadMode === 'youtube' && isValidYoutubeUrl(youtubeUrl)) {
+      onSubmit({ youtubeUrl, language, doSummary, aiModel });
     }
-    // Submission for YouTube is disabled
   };
 
   const tabClasses = (tabName: UploadMode) =>
@@ -129,17 +137,30 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
             onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)}
           />
           <div className="text-center">
-              <UploadIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-zinc-500"/>
-              <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">{STRINGS[lang].dropFileHere}</span>
-              </p>
-              {file && <p className="mt-2 text-sm text-gray-800 dark:text-white font-medium">{file.name}</p>}
+            {file ? (
+                <>
+                    <MusicalNoteIcon className="mx-auto h-12 w-12 text-indigo-600 dark:text-indigo-400" />
+                    <p className="mt-2 text-sm text-gray-800 dark:text-white font-medium max-w-full truncate px-2" title={file.name}>
+                        {file.name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400">
+                        {(file.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                </>
+            ) : (
+                <>
+                    <UploadIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-zinc-500"/>
+                    <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400">
+                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">{STRINGS[lang].dropFileHere}</span>
+                    </p>
+                </>
+            )}
           </div>
         </div>
       ) : (
         <div className="flex flex-col items-center">
             <div className="relative w-full">
-                <YoutubeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-zinc-500" />
+                <YoutubeIcon className="absolute left-3 top-1/2 -translate-y-1.2 w-5 h-5 text-gray-400 dark:text-zinc-500" />
                 <input
                     type="url"
                     value={youtubeUrl}
@@ -148,56 +169,28 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-lg bg-gray-50 dark:bg-zinc-800/50 text-black dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
                 />
             </div>
-             <p className="text-center text-xs text-gray-500 dark:text-zinc-400 mt-3">{STRINGS[lang].youtubeFeatureComingSoon}</p>
+             <p className="text-center text-xs text-gray-500 dark:text-zinc-400 mt-3">{STRINGS[lang].youtubeProcessingNote}</p>
         </div>
       )}
       
       {error && <p className="text-red-500 dark:text-red-400 text-sm text-center">{error}</p>}
 
-      <div className="w-full flex flex-col items-center justify-between gap-4 pt-6 border-t border-gray-200 dark:border-zinc-800/50 mt-4 sm:flex-row">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-            <label htmlFor="lang-select-upload" className="font-medium text-gray-700 dark:text-zinc-300 flex-shrink-0">{STRINGS[lang].language}:</label>
-            <select
-                id="lang-select-upload"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-                className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-black dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-2"
-            >
-                <option value="en">English</option>
-                <option value="pl">Polski</option>
-            </select>
-            {isDetecting && <Spinner className="w-5 h-5 text-indigo-500" />}
-        </div>
-
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-            <label htmlFor="model-select-upload" className="font-medium text-gray-700 dark:text-zinc-300 flex-shrink-0">{STRINGS[lang].aiModel}:</label>
-            <select
-                id="model-select-upload"
-                value={aiModel}
-                onChange={(e) => setAiModel(e.target.value as AiModel)}
-                className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-black dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-2"
-            >
-                <option value="fast">{STRINGS[lang].modelFast}</option>
-                <option value="advanced">{STRINGS[lang].modelAdvanced}</option>
-                <option value="premium">{STRINGS[lang].modelPremium}</option>
-            </select>
-        </div>
-
-        <div className="flex items-center">
-            <input
-                id="summary-checkbox-upload"
-                type="checkbox"
-                checked={doSummary}
-                onChange={(e) => setDoSummary(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-zinc-700 border-gray-300 dark:border-zinc-600 rounded focus:ring-indigo-500 accent-indigo-500"
-            />
-            <label htmlFor="summary-checkbox-upload" className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300">{STRINGS[lang].autoSummary}</label>
-        </div>
-      </div>
+      <SessionSettings
+        lang={lang}
+        idPrefix="upload"
+        language={language}
+        onLanguageChange={setLanguage}
+        aiModel={aiModel}
+        onAiModelChange={setAiModel}
+        doSummary={doSummary}
+        onDoSummaryChange={setDoSummary}
+        disabled={false}
+        isDetectingLanguage={isDetecting}
+      />
 
       <button
         type="submit"
-        disabled={ (uploadMode === 'file' && !file) || (uploadMode === 'youtube') }
+        disabled={ (uploadMode === 'file' && !file) || (uploadMode === 'youtube' && !isValidYoutubeUrl(youtubeUrl)) }
         className="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:bg-gray-300 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed disabled:text-gray-500 dark:disabled:text-zinc-400 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
       >
         {STRINGS[lang].submit}

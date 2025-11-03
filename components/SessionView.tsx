@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import type { Session, AppView } from '../types';
 import { formatTime } from '../utils/formatUtils';
 import { STRINGS } from '../utils/i18n';
 import { ExportButtons } from './ExportButtons';
-import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, DownloadIcon, ChevronLeftIcon, NotionIcon } from './icons';
+import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, DownloadIcon, ChevronLeftIcon, NotionIcon, YoutubeIcon } from './icons';
 import { ProcessingView } from './ProcessingView';
 import { CopyButton } from './CopyButton';
 import { SettingsContext } from '../context/SettingsContext';
@@ -18,6 +18,67 @@ interface SessionViewProps {
 }
 
 type Tab = 'summary' | 'raw';
+
+const SimpleMarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
+    // Split by newlines and filter out empty lines that are not part of code blocks
+    const lines = content.split('\n');
+
+    const elements = lines.map((line, index) => {
+        if (line.startsWith('### ')) {
+            return <h3 key={index} className="text-lg font-bold mt-4 mb-2">{line.substring(4)}</h3>;
+        }
+        if (line.startsWith('## ')) {
+            return <h2 key={index} className="text-xl font-bold mt-5 mb-3">{line.substring(3)}</h2>;
+        }
+        if (line.startsWith('- ')) {
+            const itemContent = line.substring(2);
+            const parts = itemContent.split('**');
+            return (
+                <li key={index}>
+                    {parts.map((part, i) =>
+                        i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
+                    )}
+                </li>
+            );
+        }
+        if (line.trim() === '') {
+            return <br key={index} />;
+        }
+        // Basic bold support in paragraphs
+        const parts = line.split('**');
+        return (
+            <p key={index} className="my-2">
+                {parts.map((part, i) =>
+                    i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
+                )}
+            </p>
+        );
+    });
+
+    // Group consecutive list items into <ul>
+    const groupedElements: React.ReactNode[] = [];
+    let currentList: React.ReactNode[] = [];
+
+    elements.forEach((el, index) => {
+        if (React.isValidElement(el) && el.type === 'li') {
+            currentList.push(el);
+        } else {
+            if (currentList.length > 0) {
+                groupedElements.push(<ul key={`ul-${index}`} className="list-disc pl-5 space-y-1 my-3">{currentList}</ul>);
+                currentList = [];
+            }
+            if (React.isValidElement(el) && el.type !== 'br') {
+                 groupedElements.push(el);
+            }
+        }
+    });
+
+    if (currentList.length > 0) {
+        groupedElements.push(<ul key="ul-last" className="list-disc pl-5 space-y-1 my-3">{currentList}</ul>);
+    }
+
+    return <div className="text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">{groupedElements}</div>;
+};
 
 const StatusBadge: React.FC<{ status: Session['status'] }> = ({ status }) => {
     const { lang } = useContext(SettingsContext);
@@ -35,10 +96,22 @@ const StatusBadge: React.FC<{ status: Session['status'] }> = ({ status }) => {
 
 export const SessionView: React.FC<SessionViewProps> = ({ session, setView, updateSession }) => {
   const { lang } = useContext(SettingsContext);
-  const [activeTab, setActiveTab] = useState<Tab>(session.doSummary ? 'summary' : 'raw');
+  const [activeTab, setActiveTab] = useState<Tab>(session?.doSummary ? 'summary' : 'raw');
   const [isFormatting, setIsFormatting] = useState(false);
   const [formatError, setFormatError] = useState<string | null>(null);
 
+  useEffect(() => {
+    // If the session doesn't exist (e.g., after being deleted), redirect to home.
+    if (!session) {
+      setView({ type: 'home' });
+    }
+  }, [session, setView]);
+
+  if (!session) {
+    // Render nothing while redirecting
+    return null;
+  }
+  
   const handleTitleSave = (newTitle: string) => {
     if (newTitle && newTitle !== session.title) {
         updateSession(session.id, { title: newTitle });
@@ -166,6 +239,14 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
                                     <span className="font-medium text-gray-700 dark:text-zinc-300">{modelName}</span>
                                 </div>
                             )}
+                            {session.youtubeUrl && (
+                                <div className="flex items-center gap-1.5">
+                                    <YoutubeIcon className="w-4 h-4 text-gray-500" />
+                                    <a href={session.youtubeUrl} target="_blank" rel="noopener noreferrer" className="truncate hover:underline text-gray-700 dark:text-zinc-300 font-medium">
+                                        YouTube Source
+                                    </a>
+                                </div>
+                            )}
                         </div>
                         <div className="mt-4">
                             <ExportButtons sessionId={session.id} session={session} activeTab={activeTab} />
@@ -197,9 +278,9 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
 
         <div className="bg-white dark:bg-black/20 p-4 sm:p-6 rounded-lg min-h-[300px] border border-gray-200 dark:border-zinc-800/50">
             {activeTab === 'summary' && session.doSummary && (
-                <div className="prose dark:prose-invert max-w-none prose-p:text-gray-600 dark:prose-p:text-zinc-300 prose-headings:text-gray-900 dark:prose-headings:text-white prose-blockquote:text-gray-500 dark:prose-blockquote:text-zinc-400">
+                <div>
                     {session.artifacts?.summaryMd ? 
-                        <div dangerouslySetInnerHTML={{ __html: session.artifacts.summaryMd.replace(/\n/g, '<br />') }}/> :
+                         <SimpleMarkdownRenderer content={session.artifacts.summaryMd} /> :
                         <p className="text-gray-500 dark:text-zinc-500 italic">{STRINGS[lang].noSummary}</p>
                     }
                 </div>

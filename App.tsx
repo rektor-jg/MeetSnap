@@ -7,9 +7,12 @@ import { AdminView } from './components/AdminView';
 import { useSessions } from './hooks/useSessions';
 import { EasterEgg } from './components/EasterEgg';
 import { Layout } from './components/Layout';
-import { SettingsProvider, useSettings } from './context/SettingsContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { useMatrixEasterEgg } from './hooks/useMatrixEasterEgg';
 import { useAdminEasterEgg } from './hooks/useAdminEasterEgg';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsOfService } from './components/TermsOfService';
+import { CookiePolicy } from './components/CookiePolicy';
 
 const AppContent: React.FC = () => {
   const [view, setView] = useState<AppView>({ type: 'home' });
@@ -24,8 +27,6 @@ const AppContent: React.FC = () => {
     importSessions
   } = useSessions();
   
-  const { lang } = useSettings();
-
   const { isEasterEggActive, isMatrixTheme, activateMatrixTheme, handleThemeToggle } = useMatrixEasterEgg();
   const { isAdminUnlocked, handleAdminUnlockClick } = useAdminEasterEgg();
   
@@ -50,10 +51,6 @@ const AppContent: React.FC = () => {
         return <HomeView onSubmit={createAndProcessSession} setView={setView} sessions={sortedSessions.slice(0, 3)} />;
       case 'session':
         const session = sessions[view.sessionId];
-        if (!session) {
-            setTimeout(() => setView({ type: 'home' }), 0);
-            return null;
-        }
         return <SessionView session={session} setView={setView} updateSession={updateSession} />;
       case 'history':
         return <HistoryView sessions={sortedSessions} setView={setView} deleteSession={handleDeleteSession} togglePinSession={togglePinSession} />;
@@ -66,6 +63,12 @@ const AppContent: React.FC = () => {
                   deleteAllSessions={deleteAllSessions}
                   importSessions={importSessions}
                 />;
+      case 'privacy':
+        return <PrivacyPolicy setView={setView} />;
+      case 'terms':
+        return <TermsOfService setView={setView} />;
+      case 'cookies':
+        return <CookiePolicy setView={setView} />;
       default:
         return <HomeView onSubmit={createAndProcessSession} setView={setView} sessions={sortedSessions.slice(0, 3)} />;
     }

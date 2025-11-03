@@ -138,10 +138,10 @@ const getInitialState = (): Record<string, Session> => {
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
         language: 'en',
         status: 'DONE',
-        doSummary: true,
         aiModel: 'premium',
         title: 'API Integration Sync-up',
         durationSec: 62,
+        doSummary: true,
         artifacts: {
           rawTranscript: "Speaker 1: Okay, let's sync up on the user authentication API. Mark, what's the status on the OAuth 2.0 implementation?\nSpeaker 2: The authorization code flow is complete. I'm currently working on the refresh token logic. I've hit a small snag with token expiry validation on the server-side, but it should be resolved by EOD.\nSpeaker 1: Good. What about the endpoint for fetching user profiles? Is it ready for the frontend to consume?\nSpeaker 3: Almost. The endpoint is up, but I'm still finalizing the data structure. I want to make sure we're not over-fetching data. I'll publish the final schema to the shared Confluence page by tomorrow morning.\nSpeaker 1: Perfect. Let's make sure the error handling is robust. We need consistent error codes and messages for both failed authentication and profile fetch requests.\nSpeaker 2: Agreed. I've documented the proposed error codes in the API spec. Please review them when you get a chance.\nSpeaker 1: Will do. Thanks, team. Good progress.",
           summaryMd: "### TL;DR\n\nThe team discussed the user authentication API. The OAuth 2.0 flow is nearly complete, pending a fix for refresh token logic. The user profile endpoint is almost ready, with the final data schema to be published soon. The team emphasized the need for robust and consistent error handling.\n\n### Action Items\n\n- **Mark:** Resolve the server-side token expiry validation issue by the end of the day.\n- **Speaker 3:** Publish the final schema for the user profile endpoint to Confluence by tomorrow morning.\n- **All:** Review the proposed API error codes documented in the spec.",
@@ -239,7 +239,7 @@ export const useSessions = () => {
   }, []);
 
   const createAndProcessSession = async (
-    { blob, language, doSummary, aiModel }: { blob: Blob; language: Language; doSummary: boolean; aiModel: AiModel }
+    { blob, youtubeUrl, language, doSummary, aiModel }: { blob?: Blob; youtubeUrl?: string; language: Language; doSummary: boolean; aiModel: AiModel }
   ): Promise<Session> => {
     const sessionId = `sid_${Date.now()}`;
     const newSession: Session = {
@@ -248,18 +248,30 @@ export const useSessions = () => {
       language,
       status: 'QUEUED',
       doSummary: doSummary,
-      audioBlob: blob,
       aiModel: aiModel,
+      ...(blob && { audioBlob: blob }),
+      ...(youtubeUrl && { youtubeUrl: youtubeUrl, title: youtubeUrl }),
     };
     
     dispatch({ type: 'ADD_OR_UPDATE', payload: newSession });
 
-    try {
-      await processAudioFile(newSession, (updates) => updateSession(sessionId, updates));
-    } catch (err) {
-      console.error(err);
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      updateSession(sessionId, { status: 'ERROR', error: errorMessage });
+    if (blob) {
+        try {
+          await processAudioFile(newSession, (updates) => updateSession(sessionId, updates));
+        } catch (err) {
+          console.error(err);
+          const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+          updateSession(sessionId, { status: 'ERROR', error: errorMessage });
+        }
+    } else if (youtubeUrl) {
+        // In a real application, this would trigger a backend job.
+        // Here, we simulate the feature by showing an informative error message.
+        setTimeout(() => {
+            updateSession(sessionId, { 
+                status: 'ERROR', 
+                error: 'Processing from YouTube requires server-side support which is not enabled in this demo.' 
+            });
+        }, 2000); // Simulate some processing time
     }
     
     return newSession;

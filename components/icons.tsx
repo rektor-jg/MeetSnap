@@ -178,8 +178,28 @@ export const ArrowPathIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
     </svg>
 );
 
+// FIX: Added missing SettingsIcon.
+export const SettingsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-.95.55.057 1.007.56 1.007 1.11v.448c.522.072 1.026.187 1.503.334.478.147.92.343 1.326.58.406.238.78.524 1.107.851.326.327.613.701.85 1.107.238.406.434.848.58 1.327.147.476.262.98.334 1.503v.448c.057.55.56 1.007 1.11 1.007.55-.057 1.007-.56 1.007-1.11v-.448c-.072-.522-.187-1.026-.334-1.503a4.993 4.993 0 0 0-.58-1.327c-.238-.406-.524-.78-.851-1.107a4.993 4.993 0 0 0-1.107-.851c-.406-.238-.848-.434-1.327-.58a4.993 4.993 0 0 0-1.503-.334V3.94c0-.55-.457-1.007-1.007-1.007-.55 0-1.007.457-1.007 1.007v.448c-.522.072-1.026.187-1.503.334a4.993 4.993 0 0 0-1.327.58c-.406.238-.78.524-1.107.851a4.993 4.993 0 0 0-.85 1.107c-.238.406-.434.848-.58 1.327a4.993 4.993 0 0 0-.334 1.503v.448c0 .55.457 1.007 1.007 1.007.55 0 1.007-.457 1.007-1.007v-.448c.072-.522.187-1.026.334-1.503a4.993 4.993 0 0 0 .58-1.327c.238-.406.524-.78.851-1.107.327-.326.701-.613 1.107-.851.406-.238.848-.434 1.327-.58.476-.147.98-.262 1.503-.334v-.448z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+    </svg>
+);
+
 export const CodeBracketIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
     </svg>
+);
+
+export const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+    </svg>
+);
+
+export const MusicalNoteIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.07 1.918l-4.5 2.25a2.25 2.25 0 01-2.36 0l-4.5-2.25A2.25 2.25 0 016.75 12.75v-1.5a2.25 2.25 0 012.25-2.25H15M12 15.75v-1.5" />
+  </svg>
 );

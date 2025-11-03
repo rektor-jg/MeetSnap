@@ -1,6 +1,8 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useContext } from 'react';
 import type { Session, AppView } from '../types';
 import { ChevronLeftIcon, TrashIcon, ArrowPathIcon, CodeBracketIcon, UploadIcon, DownloadIcon, ExclamationTriangleIcon } from './icons';
+import { SettingsContext } from '../context/SettingsContext';
+import { STRINGS } from '../utils/i18n';
 
 interface AdminViewProps {
   sessions: Session[];
@@ -21,6 +23,7 @@ const StatCard: React.FC<{ title: string; value: number | string, colorClass: st
 export const AdminView: React.FC<AdminViewProps> = ({ sessions, setView, deleteSession, reprocessSession, deleteAllSessions, importSessions }) => {
     const [expandedJsonId, setExpandedJsonId] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { lang } = useContext(SettingsContext);
 
     const stats = useMemo(() => {
         return {
@@ -147,7 +150,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ sessions, setView, deleteS
              {/* Global Actions Section */}
             <section>
                 <h3 className="text-lg font-semibold mb-4 text-black dark:text-white">Global Actions</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="bg-white dark:bg-zinc-800/50 p-4 rounded-lg border border-gray-200 dark:border-zinc-700/50 space-y-2">
                         <h4 className="font-semibold text-black dark:text-white">Export / Import</h4>
                         <p className="text-xs text-gray-500 dark:text-zinc-400">Save or load all session data from a JSON file.</p>

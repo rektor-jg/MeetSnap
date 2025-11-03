@@ -5,9 +5,10 @@ import { UploadPanel } from './UploadPanel';
 import { STRINGS } from '../utils/i18n';
 import { StatusDisplay } from './StatusDisplay';
 import { SettingsContext } from '../context/SettingsContext';
+import { Faq } from './Faq';
 
 interface HomeViewProps {
-  onSubmit: (params: { blob: Blob, language: Language, doSummary: boolean, aiModel: AiModel }) => Promise<Session>;
+  onSubmit: (params: { blob?: Blob, youtubeUrl?: string, language: Language, doSummary: boolean, aiModel: AiModel }) => Promise<Session>;
   setView: (view: AppView) => void;
   sessions: Session[];
 }
@@ -18,8 +19,8 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, sessions 
   const [activeTab, setActiveTab] = useState<Tab>('record');
   const { lang } = useContext(SettingsContext);
 
-  const handleProcessRequest = async (blob: Blob, language: Language, doSummary: boolean, aiModel: AiModel) => {
-    const newSession = await onSubmit({ blob, language, doSummary, aiModel });
+  const handleProcessRequest = async (params: { blob?: Blob, youtubeUrl?: string, language: Language, doSummary: boolean, aiModel: AiModel }) => {
+    const newSession = await onSubmit(params);
     setView({ type: 'session', sessionId: newSession.id });
   };
 
@@ -53,9 +54,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, sessions 
 
         <div className="p-4 sm:p-6">
           {activeTab === 'record' ? (
-            <RecordPanel onSubmit={handleProcessRequest} />
+            <RecordPanel onSubmit={(blob, language, doSummary, aiModel) => handleProcessRequest({ blob, language, doSummary, aiModel })} />
           ) : (
-            <UploadPanel onSubmit={handleProcessRequest} />
+            <UploadPanel onSubmit={({ file, youtubeUrl, language, doSummary, aiModel }) => handleProcessRequest({ blob: file, youtubeUrl, language, doSummary, aiModel })} />
           )}
         </div>
       </div>
@@ -87,6 +88,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, sessions 
               </div>
           </div>
       )}
+      <Faq setView={setView} />
     </div>
   );
 };

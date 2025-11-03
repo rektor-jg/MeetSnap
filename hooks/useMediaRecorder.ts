@@ -6,13 +6,15 @@ type Status = 'idle' | 'recording' | 'paused' | 'stopped';
 interface UseMediaRecorderProps {
   onStop: (blob: Blob) => void;
   onDataAvailable?: (chunk: Blob) => void;
+  // FIX: Added onStreamReady to allow parent components to access the stream for visualization.
+  onStreamReady?: (stream: MediaStream) => void;
 }
 
 interface StartRecordingOptions {
   includeMicrophone: boolean;
 }
 
-export const useMediaRecorder = ({ onStop, onDataAvailable }: UseMediaRecorderProps) => {
+export const useMediaRecorder = ({ onStop, onDataAvailable, onStreamReady }: UseMediaRecorderProps) => {
   const [status, setStatus] = useState<Status>('idle');
   const [time, setTime] = useState(0);
   const [error, setError] = useState<RecordingError | null>(null);
@@ -117,6 +119,9 @@ export const useMediaRecorder = ({ onStop, onDataAvailable }: UseMediaRecorderPr
       
       const combinedStream = destination.stream;
       
+      // FIX: Call the onStreamReady callback with the combined stream.
+      onStreamReady?.(combinedStream);
+
       setStatus('recording');
       const mediaRecorder = new MediaRecorder(combinedStream, { mimeType: 'audio/webm' });
       mediaRecorderRef.current = mediaRecorder;
@@ -144,7 +149,7 @@ export const useMediaRecorder = ({ onStop, onDataAvailable }: UseMediaRecorderPr
       acquiredStreams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
       handleRecordingError(err);
     }
-  }, [onStop, onDataAvailable, startTimer, cleanup, handleRecordingError]);
+  }, [onStop, onDataAvailable, onStreamReady, startTimer, cleanup, handleRecordingError]);
 
   const stop = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {

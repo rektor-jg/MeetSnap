@@ -6,13 +6,13 @@ import { SoundWaveIcon, PauseIcon, PlayIcon, StopIcon, DownloadIcon, ErrorIcon, 
 import { STRINGS } from '../utils/i18n';
 import { SettingsContext } from '../context/SettingsContext';
 import { detectLanguageFromAudio } from '../services/geminiService';
-import { Spinner } from './Spinner';
+import { SessionSettings } from './SessionSettings';
 
 interface RecordPanelProps {
   onSubmit: (blob: Blob, language: Language, doSummary: boolean, aiModel: AiModel) => void;
 }
 
-const getErrorMessage = (type: RecordingErrorType, lang: Language) => {
+const getErrorMessage = (type: RecordingErrorType, lang: Language | 'en' | 'pl') => {
     switch (type) {
         case 'PERMISSION_DENIED':
             return STRINGS[lang].errorPermissionDenied;
@@ -27,7 +27,7 @@ const getErrorMessage = (type: RecordingErrorType, lang: Language) => {
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
   const { lang } = useContext(SettingsContext);
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('auto');
   const [doSummary, setDoSummary] = useState(true);
   const [aiModel, setAiModel] = useState<AiModel>('fast');
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
@@ -45,7 +45,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
   }, [doSummary, language, aiModel, onSubmit]);
 
   const handleDataAvailable = useCallback(async (chunk: Blob) => {
-    if (detectionAttempted.current || isDetecting) {
+    if (detectionAttempted.current || isDetecting || language !== 'auto') {
         return;
     }
     detectionAttempted.current = true;
@@ -60,7 +60,7 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
     } finally {
         setIsDetecting(false);
     }
-  }, [isDetecting]);
+  }, [isDetecting, language]);
 
   const { status, time, start, stop, pause, resume, error } = useMediaRecorder({ 
     onStop: handleStop,
@@ -145,7 +145,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
       <div className={`relative flex items-center justify-center w-32 h-32 sm:w-36 sm:h-36 rounded-full transition-all duration-300 ${isRecording ? 'bg-red-500/10 dark:bg-red-900/50' : 'bg-gray-200 dark:bg-zinc-800'}`}>
         {isRecording && (
           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 120 120" style={{ transform: 'rotate(-90deg)' }}>
-            {/* Background Circle */}
             <circle
               className="text-red-500/20"
               stroke="currentColor"
@@ -155,7 +154,6 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
               cx="60"
               cy="60"
             />
-            {/* Progress Circle */}
             <circle
               className="text-red-500"
               stroke="currentColor"
@@ -201,66 +199,35 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
         )}
       </div>
 
-      <div className="w-full flex flex-col items-start gap-4 pt-6 border-t border-gray-200 dark:border-zinc-800/50 mt-4">
-        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label htmlFor="lang-select-record" className="font-medium text-gray-700 dark:text-zinc-300 flex-shrink-0">{STRINGS[lang].language}:</label>
-              <select
-                  id="lang-select-record"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as Language)}
-                  className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-black dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-2"
-                  disabled={isRecording}
-              >
-                  <option value="en">English</option>
-                  <option value="pl">Polski</option>
-              </select>
-              {isDetecting && <Spinner className="w-5 h-5 text-indigo-500" />}
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label htmlFor="model-select-record" className="font-medium text-gray-700 dark:text-zinc-300 flex-shrink-0">{STRINGS[lang].aiModel}:</label>
-              <select
-                  id="model-select-record"
-                  value={aiModel}
-                  onChange={(e) => setAiModel(e.target.value as AiModel)}
-                  className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 text-black dark:text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 w-full p-2"
-                  disabled={isRecording}
-              >
-                  <option value="fast">{STRINGS[lang].modelFast}</option>
-                  <option value="advanced">{STRINGS[lang].modelAdvanced}</option>
-                  <option value="premium">{STRINGS[lang].modelPremium}</option>
-              </select>
-          </div>
+      <div className="w-full flex flex-col items-center">
+        <div className="w-full max-w-lg">
+          <SessionSettings
+            lang={lang}
+            idPrefix="record"
+            language={language}
+            onLanguageChange={setLanguage}
+            aiModel={aiModel}
+            onAiModelChange={setAiModel}
+            doSummary={doSummary}
+            onDoSummaryChange={setDoSummary}
+            disabled={isRecording}
+            isDetectingLanguage={isDetecting}
+          />
         </div>
-
-        <div className="w-full flex items-center justify-center gap-6">
-          <div className="flex items-center">
-              <input
-                  id="mic-checkbox-record"
-                  type="checkbox"
-                  checked={includeMicrophone}
-                  onChange={(e) => setIncludeMicrophone(e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-zinc-700 border-gray-300 dark:border-zinc-600 rounded focus:ring-indigo-500 accent-indigo-500"
-                  disabled={isRecording}
-              />
-              <label htmlFor="mic-checkbox-record" className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300 flex items-center gap-1.5">
-                <MicrophoneIcon className="w-4 h-4" />
-                {STRINGS[lang].includeMicrophone}
-              </label>
-          </div>
-
-          <div className="flex items-center">
-              <input
-                  id="summary-checkbox-record"
-                  type="checkbox"
-                  checked={doSummary}
-                  onChange={(e) => setDoSummary(e.target.checked)}
-                  className="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-zinc-700 border-gray-300 dark:border-zinc-600 rounded focus:ring-indigo-500 accent-indigo-500"
-                  disabled={isRecording}
-              />
-              <label htmlFor="summary-checkbox-record" className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300">{STRINGS[lang].autoSummary}</label>
-          </div>
+        
+        <div className="flex items-center mt-4">
+            <input
+                id="mic-checkbox-record"
+                type="checkbox"
+                checked={includeMicrophone}
+                onChange={(e) => setIncludeMicrophone(e.target.checked)}
+                className="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-zinc-700 border-gray-300 dark:border-zinc-600 rounded focus:ring-indigo-500 accent-indigo-500"
+                disabled={isRecording}
+            />
+            <label htmlFor="mic-checkbox-record" className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <MicrophoneIcon className="w-4 h-4" />
+              {STRINGS[lang].includeMicrophone}
+            </label>
         </div>
       </div>
     </div>

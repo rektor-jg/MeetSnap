@@ -99,7 +99,7 @@ ${transcript}
  */
 export const detectLanguageFromAudio = async (
   audioBlob: Blob,
-): Promise<Language | null> => {
+): Promise<'en' | 'pl' | null> => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
     console.error("API key is missing for language detection.");
@@ -158,6 +158,18 @@ export const processAudioFile = async (
   
   onUpdate({ status: 'PROCESSING' });
 
+  // Determine the language to use for the prompt.
+  let languageForPrompt: 'en' | 'pl';
+
+  if (session.language === 'en' || session.language === 'pl') {
+      languageForPrompt = session.language;
+  } else { // This covers 'auto' and any other unexpected case
+      const detectedLang = await detectLanguageFromAudio(session.audioBlob);
+      languageForPrompt = detectedLang || 'en'; // Default to 'en' if detection fails
+      // Update the session's language from 'auto' to the detected one for persistence
+      onUpdate({ language: languageForPrompt });
+  }
+
   // Convert audio blob to base64
   const audioBase64 = await blobToBase64(session.audioBlob);
   const audioMimeType = session.audioBlob.type.startsWith('audio/') ? session.audioBlob.type : 'audio/webm';
@@ -173,7 +185,7 @@ export const processAudioFile = async (
     ? `Second, based on the transcript, create a concise summary (3-4 sentences). Third, provide a short, descriptive title for the meeting (3-5 words).`
     : ``;
 
-  const prompt = `First, transcribe the provided audio recording accurately, identifying and labeling different speakers (e.g., Speaker 1, Speaker 2). The language of the audio is ${session.language === 'pl' ? 'Polish' : 'English'}.
+  const prompt = `First, transcribe the provided audio recording accurately, identifying and labeling different speakers (e.g., Speaker 1, Speaker 2). The language of the audio is ${languageForPrompt === 'pl' ? 'Polish' : 'English'}.
 ${summaryInstruction}`;
   
   const selectedModel = MODEL_MAP[session.aiModel] || 'gemini-2.5-flash';

@@ -1,5 +1,5 @@
 export type SessionStatus = "QUEUED" | "PROCESSING" | "DONE" | "ERROR";
-export type Language = "pl" | "en";
+export type Language = "pl" | "en" | "auto";
 export type AiModel = 'fast' | 'advanced' | 'premium';
 
 export type RecordingErrorType = 'PERMISSION_DENIED' | 'NOT_SUPPORTED' | 'NO_AUDIO_TRACK' | 'UNKNOWN';
@@ -35,10 +35,14 @@ export interface Session {
   doSummary: boolean;
   aiModel: AiModel;
   isPinned?: boolean;
+  youtubeUrl?: string;
 }
 
 export type AppView = 
   | { type: 'home' }
   | { type: 'session'; sessionId: string }
   | { type: 'history' }
-  | { type: 'admin' };
+  | { type: 'admin' }
+  | { type: 'privacy' }
+  | { type: 'terms' }
+  | { type: 'cookies' };
