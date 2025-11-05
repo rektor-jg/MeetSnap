@@ -2,7 +2,7 @@ import React, { useState, useCallback, useContext, useEffect, useRef } from 'rea
 import type { Language, AiModel, RecordingErrorType } from '../types';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { formatTime } from '../utils/formatUtils';
-import { SoundWaveIcon, PauseIcon, PlayIcon, StopIcon, DownloadIcon, ErrorIcon, MicrophoneIcon } from './icons';
+import { SoundWaveIcon, PauseIcon, PlayIcon, StopIcon, DownloadIcon, ErrorIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
 import { SettingsContext } from '../context/SettingsContext';
 import { detectLanguageFromAudio } from '../services/geminiService';
@@ -199,36 +199,22 @@ export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
         )}
       </div>
 
-      <div className="w-full flex flex-col items-center">
-        <div className="w-full max-w-lg">
-          <SessionSettings
-            lang={lang}
-            idPrefix="record"
-            language={language}
-            onLanguageChange={setLanguage}
-            aiModel={aiModel}
-            onAiModelChange={setAiModel}
-            doSummary={doSummary}
-            onDoSummaryChange={setDoSummary}
-            disabled={isRecording}
-            isDetectingLanguage={isDetecting}
-          />
-        </div>
-        
-        <div className="flex items-center mt-4">
-            <input
-                id="mic-checkbox-record"
-                type="checkbox"
-                checked={includeMicrophone}
-                onChange={(e) => setIncludeMicrophone(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-zinc-700 border-gray-300 dark:border-zinc-600 rounded focus:ring-indigo-500 accent-indigo-500"
-                disabled={isRecording}
-            />
-            <label htmlFor="mic-checkbox-record" className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300 flex items-center gap-1.5">
-              <MicrophoneIcon className="w-4 h-4" />
-              {STRINGS[lang].includeMicrophone}
-            </label>
-        </div>
+      <div className="w-full max-w-lg">
+        <SessionSettings
+          lang={lang}
+          idPrefix="record"
+          language={language}
+          onLanguageChange={setLanguage}
+          aiModel={aiModel}
+          onAiModelChange={setAiModel}
+          doSummary={doSummary}
+          onDoSummaryChange={setDoSummary}
+          disabled={isRecording}
+          isDetectingLanguage={isDetecting}
+          showMicrophoneOption={true}
+          includeMicrophone={includeMicrophone}
+          onIncludeMicrophoneChange={setIncludeMicrophone}
+        />
       </div>
     </div>
   );

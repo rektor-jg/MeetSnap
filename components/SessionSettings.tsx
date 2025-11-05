@@ -2,6 +2,7 @@ import React from 'react';
 import type { Language, AiModel } from '../types';
 import { STRINGS } from '../utils/i18n';
 import { Spinner } from './Spinner';
+import { MicrophoneIcon } from './icons';
 
 interface SessionSettingsProps {
   language: Language;
@@ -14,6 +15,9 @@ interface SessionSettingsProps {
   isDetectingLanguage: boolean;
   idPrefix: string;
   lang: 'en' | 'pl';
+  showMicrophoneOption?: boolean;
+  includeMicrophone?: boolean;
+  onIncludeMicrophoneChange?: (checked: boolean) => void;
 }
 
 export const SessionSettings: React.FC<SessionSettingsProps> = ({
@@ -27,6 +31,9 @@ export const SessionSettings: React.FC<SessionSettingsProps> = ({
   isDetectingLanguage,
   idPrefix,
   lang,
+  showMicrophoneOption,
+  includeMicrophone,
+  onIncludeMicrophoneChange,
 }) => {
   return (
     <div className="w-full flex flex-col items-start gap-4 pt-6 border-t border-gray-200 dark:border-zinc-800/50 mt-4">
@@ -62,7 +69,7 @@ export const SessionSettings: React.FC<SessionSettingsProps> = ({
           </select>
         </div>
       </div>
-      <div className="w-full flex items-center justify-center">
+      <div className="w-full flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
         <div className="flex items-center">
           <input
             id={`${idPrefix}-summary-checkbox`}
@@ -74,6 +81,22 @@ export const SessionSettings: React.FC<SessionSettingsProps> = ({
           />
           <label htmlFor={`${idPrefix}-summary-checkbox`} className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300">{STRINGS[lang].autoSummary}</label>
         </div>
+        {showMicrophoneOption && (
+            <div className="flex items-center">
+                <input
+                    id="mic-checkbox-record"
+                    type="checkbox"
+                    checked={includeMicrophone}
+                    onChange={(e) => onIncludeMicrophoneChange?.(e.target.checked)}
+                    className="w-4 h-4 text-indigo-600 bg-gray-100 dark:bg-zinc-700 border-gray-300 dark:border-zinc-600 rounded focus:ring-indigo-500 accent-indigo-500"
+                    disabled={disabled}
+                />
+                <label htmlFor="mic-checkbox-record" className="ml-2 text-sm font-medium text-gray-700 dark:text-zinc-300 flex items-center gap-1.5">
+                  <MicrophoneIcon className="w-4 h-4" />
+                  {STRINGS[lang].includeMicrophone}
+                </label>
+            </div>
+        )}
       </div>
     </div>
   );

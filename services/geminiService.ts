@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Session, Segment, AiModel, Language } from '../types';
+import { getApiKey } from "../utils/apiKey";
 
 // Helper to convert Blob to base64
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -66,10 +67,7 @@ export const formatForNotion = async (
     transcript: string,
     model: AiModel,
   ): Promise<string> => {
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-      throw new Error("API key is missing.");
-    }
+    const apiKey = getApiKey();
     const ai = new GoogleGenAI({ apiKey });
   
     const prompt = `Directly reformat the following transcript into a structured summary in Markdown format, suitable for Notion. Do not include any introductory phrases, conversational text, or explanations. The output should start immediately with the first Markdown heading.
@@ -100,13 +98,8 @@ ${transcript}
 export const detectLanguageFromAudio = async (
   audioBlob: Blob,
 ): Promise<'en' | 'pl' | null> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    console.error("API key is missing for language detection.");
-    return null;
-  }
-  
   try {
+    const apiKey = getApiKey();
     const ai = new GoogleGenAI({ apiKey });
     const audioBase64 = await blobToBase64(audioBlob);
     const audioMimeType = audioBlob.type.startsWith('audio/') ? audioBlob.type : 'audio/webm';
@@ -137,6 +130,7 @@ export const detectLanguageFromAudio = async (
 
   } catch (error) {
     console.error("Error during language detection:", error);
+    // Do not show an alert, just return null so the flow can continue with a default.
     return null;
   }
 };
@@ -146,10 +140,7 @@ export const processAudioFile = async (
   session: Session,
   onUpdate: (updates: Partial<Session>) => void
 ): Promise<void> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API key is missing. The application cannot connect to the AI service. Ensure the API key is configured correctly.");
-  }
+  const apiKey = getApiKey();
   const ai = new GoogleGenAI({ apiKey });
   
   if (!session.audioBlob) {

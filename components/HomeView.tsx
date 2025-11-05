@@ -34,9 +34,13 @@ export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, sessions 
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-8">
-        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-400 mb-2">{STRINGS[lang].appHeadline}</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-600 dark:from-white dark:to-gray-400 mb-2">
+          <span className="hidden sm:inline">{STRINGS[lang].appHeadline}</span>
+          <span className="sm:hidden">{STRINGS[lang].appHeadlineMobile}</span>
+        </h2>
         <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg">
-          {STRINGS[lang].appSubhead}
+          <span className="hidden sm:inline">{STRINGS[lang].appSubhead}</span>
+          <span className="sm:hidden">{STRINGS[lang].appSubheadMobile}</span>
         </p>
       </div>
 
