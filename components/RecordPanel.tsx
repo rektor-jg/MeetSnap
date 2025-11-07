@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useContext, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { Language, AiModel, RecordingErrorType } from '../types';
 import { useMediaRecorder } from '../hooks/useMediaRecorder';
 import { formatTime } from '../utils/formatUtils';
 import { SoundWaveIcon, PauseIcon, PlayIcon, StopIcon, DownloadIcon, ErrorIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { detectLanguageFromAudio } from '../services/geminiService';
 import { SessionSettings } from './SessionSettings';
 
@@ -26,7 +26,7 @@ const getErrorMessage = (type: RecordingErrorType, lang: Language | 'en' | 'pl')
 };
 
 export const RecordPanel: React.FC<RecordPanelProps> = ({ onSubmit }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   const [language, setLanguage] = useState<Language>('auto');
   const [doSummary, setDoSummary] = useState(true);
   const [aiModel, setAiModel] = useState<AiModel>('fast');

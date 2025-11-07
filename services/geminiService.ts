@@ -66,16 +66,17 @@ function createSegments(text: string, duration: number): Segment[] {
 export const formatForNotion = async (
     transcript: string,
     model: AiModel,
-  ): Promise<string> => {
+  ): Promise<Record<'pl' | 'en', string>> => {
     const apiKey = getApiKey();
     const ai = new GoogleGenAI({ apiKey });
   
-    const prompt = `Directly reformat the following transcript into a structured summary in Markdown format, suitable for Notion. Do not include any introductory phrases, conversational text, or explanations. The output should start immediately with the first Markdown heading.
+    const prompt = `Directly reformat the following transcript into a structured summary in Markdown format, suitable for Notion. Do not include any introductory phrases or explanations.
+Provide the entire formatted output in TWO separate language versions: one in English ('en') and one in Polish ('pl').
 
-The output must contain these sections with clear headings (e.g., using '##' or '###'):
+The output for each language must contain these sections with clear headings (e.g., using '##' or '###'):
 1.  **TL;DR:** A concise summary of the entire meeting in 3-4 sentences.
 2.  **Key Discussion Points:** A bulleted list summarizing the main topics discussed.
-3.  **Action Items:** A bulleted list of tasks or follow-ups. If an assignee is mentioned, specify who is responsible (e.g., "- [ ] **User:** Action description.").
+3.  **Action Items:** A bulleted list of tasks or follow-ups.
 
 Transcript:
 ---
@@ -87,9 +88,73 @@ ${transcript}
     const response = await ai.models.generateContent({
         model: selectedModel,
         contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              en: {
+                type: Type.STRING,
+                description: 'The full formatted summary in English markdown.'
+              },
+              pl: {
+                type: Type.STRING,
+                description: 'The full formatted summary in Polish markdown.'
+              }
+            },
+            required: ['en', 'pl']
+          }
+        }
     });
     
-    return response.text;
+    return JSON.parse(response.text);
+  };
+
+export const formatForGoogleDocs = async (
+    transcript: string,
+    model: AiModel,
+  ): Promise<Record<'pl' | 'en', string>> => {
+    const apiKey = getApiKey();
+    const ai = new GoogleGenAI({ apiKey });
+  
+    const prompt = `Directly reformat the following transcript into a structured summary in Markdown format, perfect for a Google Doc. Do not include any introductory phrases or explanations.
+Provide the entire formatted output in TWO separate language versions: one in English ('en') and one in Polish ('pl').
+
+The output for each language must contain these sections with clear headings (e.g., using '##' or '###'):
+1.  **TL;DR:** A concise summary of the entire meeting in 3-4 sentences.
+2.  **Key Discussion Points:** A bulleted list summarizing the main topics discussed.
+3.  **Action Items:** A simple bulleted list of tasks or follow-ups.
+
+Transcript:
+---
+${transcript}
+---`;
+  
+    const selectedModel = MODEL_MAP[model] || 'gemini-2.5-flash';
+  
+    const response = await ai.models.generateContent({
+        model: selectedModel,
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              en: {
+                type: Type.STRING,
+                description: 'The full formatted summary in English markdown.'
+              },
+              pl: {
+                type: Type.STRING,
+                description: 'The full formatted summary in Polish markdown.'
+              }
+            },
+            required: ['en', 'pl']
+          }
+        }
+    });
+    
+    return JSON.parse(response.text);
   };
 
 /**
@@ -173,7 +238,8 @@ export const processAudioFile = async (
   };
   
   const summaryInstruction = session.doSummary
-    ? `Second, based on the transcript, create a concise summary (3-4 sentences). Third, provide a short, descriptive title for the meeting (3-5 words).`
+    ? `Second, based on the transcript, create a concise summary (3-4 sentences). Provide this summary in BOTH English and Polish.
+Third, provide a short, descriptive title for the meeting (3-5 words). Provide this title in BOTH English and Polish.`
     : ``;
 
   const prompt = `First, transcribe the provided audio recording accurately, identifying and labeling different speakers (e.g., Speaker 1, Speaker 2). The language of the audio is ${languageForPrompt === 'pl' ? 'Polish' : 'English'}.
@@ -195,12 +261,20 @@ ${summaryInstruction}`;
                 },
                 ...(session.doSummary && {
                     summaryMd: {
-                        type: Type.STRING,
-                        description: 'A concise 3-4 sentence summary of the transcript in Markdown format.'
+                        type: Type.OBJECT,
+                        properties: {
+                            en: { type: Type.STRING, description: 'The concise summary in English, in Markdown format.' },
+                            pl: { type: Type.STRING, description: 'The concise summary in Polish, in Markdown format.' }
+                        },
+                        required: ['en', 'pl']
                     },
                     title: {
-                        type: Type.STRING,
-                        description: 'A short, descriptive title for the meeting, about 3-5 words long.'
+                        type: Type.OBJECT,
+                        properties: {
+                            en: { type: Type.STRING, description: 'The short title in English.' },
+                            pl: { type: Type.STRING, description: 'The short title in Polish.' }
+                        },
+                        required: ['en', 'pl']
                     }
                 })
             },
@@ -220,11 +294,12 @@ ${summaryInstruction}`;
         const { title, summaryMd } = result;
         onUpdate({
             status: 'DONE',
-            title: title || 'Untitled Session',
+            // Set title based on the language of the transcript for user convenience
+            title: title?.[languageForPrompt] || title?.en || 'Untitled Session',
             durationSec,
             artifacts: {
                 rawTranscript,
-                summaryMd: summaryMd || '',
+                summaryMd: summaryMd || { en: '', pl: '' },
                 segments
             },
         });
@@ -237,7 +312,7 @@ ${summaryInstruction}`;
             artifacts: {
                 rawTranscript,
                 segments,
-                summaryMd: '',
+                summaryMd: { en: '', pl: '' },
             },
         });
     }

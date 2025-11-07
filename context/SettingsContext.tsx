@@ -12,31 +12,31 @@ interface SettingsContextType {
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-const getInitialTheme = (): Theme => {
+const getInitialState = <T,>(key: string, defaultValue: T, validator?: (value: any) => value is T): T => {
     if (typeof window !== 'undefined' && window.localStorage) {
-        const storedTheme = window.localStorage.getItem('theme');
-        if (storedTheme === 'dark' || storedTheme === 'light') {
-            return storedTheme;
-        }
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            return 'dark';
+        try {
+            const storedValue = window.localStorage.getItem(key);
+            if (storedValue !== null) {
+                const parsedValue = JSON.parse(storedValue);
+                if (validator ? validator(parsedValue) : true) {
+                    return parsedValue;
+                }
+            }
+        } catch (e) {
+            console.error(`Failed to parse ${key} from localStorage`, e);
         }
     }
-    return 'light';
+    return defaultValue;
 };
 
-const getInitialLang = (): Language => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-        const storedLang = window.localStorage.getItem('lang');
-        if (storedLang === 'en' || storedLang === 'pl' || storedLang === 'auto') {
-            return storedLang;
-        }
-    }
-    return 'en';
+const getInitialTheme = (): Theme => {
+    // Always default to 'light' unless a theme is explicitly saved in localStorage.
+    // This removes the check for the system's preferred color scheme.
+    return getInitialState<'light' | 'dark'>('theme', 'light', (v): v is Theme => v === 'light' || v === 'dark');
 };
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [lang, setLang] = useState<Language>(getInitialLang);
+  const [lang, setLang] = useState<Language>(() => getInitialState<Language>('lang', 'en', (v): v is Language => ['en', 'pl', 'auto'].includes(v)));
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
@@ -46,11 +46,11 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
         root.classList.remove('dark');
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem('theme', JSON.stringify(theme));
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('lang', lang);
+    localStorage.setItem('lang', JSON.stringify(lang));
   }, [lang]);
 
   const contextValue = useMemo(() => ({

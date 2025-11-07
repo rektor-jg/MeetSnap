@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Spinner } from './Spinner';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 export const ProcessingView: React.FC = () => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   return (
     <div className="text-center p-12 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800/50 rounded-xl shadow-lg dark:shadow-2xl dark:shadow-black/30">
         <Spinner className="w-10 h-10 mx-auto mb-4 text-indigo-500 dark:text-indigo-400"/>

@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import type { Session } from '../types';
 import { exportToMarkdown, exportToSRT, exportToTXT, exportToVTT } from '../utils/exportUtils';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface ExportButtonsProps {
   sessionId: string;
@@ -11,7 +11,7 @@ interface ExportButtonsProps {
 }
 
 export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session, activeTab }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
 
   const handleExport = (format: 'md' | 'srt' | 'vtt' | 'txt') => {
     switch (format) {
@@ -25,7 +25,7 @@ export const ExportButtons: React.FC<ExportButtonsProps> = ({ sessionId, session
         exportToVTT(session);
         break;
       case 'txt':
-        exportToTXT(session, activeTab);
+        exportToTXT(session, lang, activeTab);
         break;
     }
   };

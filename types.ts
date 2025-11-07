@@ -19,7 +19,7 @@ export interface Artifacts {
   rawTranscript?: string;
   // FIX: Made segments optional to align with reducer logic.
   segments?: Segment[];
-  summaryMd?: string;
+  summaryMd?: Record<'pl' | 'en', string>;
 }
 
 export interface Session {

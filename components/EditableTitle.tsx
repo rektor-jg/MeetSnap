@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { EditIcon, CheckIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface EditableTitleProps {
   initialTitle: string;
@@ -10,7 +10,7 @@ interface EditableTitleProps {
 }
 
 export const EditableTitle: React.FC<EditableTitleProps> = ({ initialTitle, onSave, placeholder }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState(initialTitle);
   const inputRef = useRef<HTMLInputElement>(null);

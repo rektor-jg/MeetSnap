@@ -1,14 +1,14 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { CopyIcon, CheckIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface CopyButtonProps {
   textToCopy: string;
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({ textToCopy }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {

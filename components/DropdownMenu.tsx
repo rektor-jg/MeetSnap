@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { EllipsisVerticalIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface MenuItem {
     label: string;
@@ -15,7 +15,7 @@ interface DropdownMenuProps {
 }
 
 export const DropdownMenu: React.FC<DropdownMenuProps> = ({ items }) => {
-    const { lang } = useContext(SettingsContext);
+    const { lang } = useSettings();
     const [isOpen, setIsOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 

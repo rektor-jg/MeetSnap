@@ -1,15 +1,16 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Session, AppView } from '../types';
 import { formatTime } from '../utils/formatUtils';
 import { STRINGS } from '../utils/i18n';
 import { ExportButtons } from './ExportButtons';
-import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, DownloadIcon, ChevronLeftIcon, NotionIcon, YoutubeIcon } from './icons';
+import { ErrorIcon, CheckCircleIcon, ClockIcon, ProcessingIcon, CalendarIcon, LanguageIcon, ModelIcon, DownloadIcon, ChevronLeftIcon, NotionIcon, YoutubeIcon, GoogleDocsIcon } from './icons';
 import { ProcessingView } from './ProcessingView';
 import { CopyButton } from './CopyButton';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { EditableTitle } from './EditableTitle';
-import { formatForNotion } from '../services/geminiService';
+import { formatForNotion, formatForGoogleDocs } from '../services/geminiService';
 import { Spinner } from './Spinner';
+import { SimpleMarkdownRenderer } from './SimpleMarkdownRenderer';
 
 interface SessionViewProps {
   session: Session;
@@ -19,69 +20,8 @@ interface SessionViewProps {
 
 type Tab = 'summary' | 'raw';
 
-const SimpleMarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
-    // Split by newlines and filter out empty lines that are not part of code blocks
-    const lines = content.split('\n');
-
-    const elements = lines.map((line, index) => {
-        if (line.startsWith('### ')) {
-            return <h3 key={index} className="text-lg font-bold mt-4 mb-2">{line.substring(4)}</h3>;
-        }
-        if (line.startsWith('## ')) {
-            return <h2 key={index} className="text-xl font-bold mt-5 mb-3">{line.substring(3)}</h2>;
-        }
-        if (line.startsWith('- ')) {
-            const itemContent = line.substring(2);
-            const parts = itemContent.split('**');
-            return (
-                <li key={index}>
-                    {parts.map((part, i) =>
-                        i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
-                    )}
-                </li>
-            );
-        }
-        if (line.trim() === '') {
-            return <br key={index} />;
-        }
-        // Basic bold support in paragraphs
-        const parts = line.split('**');
-        return (
-            <p key={index} className="my-2">
-                {parts.map((part, i) =>
-                    i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
-                )}
-            </p>
-        );
-    });
-
-    // Group consecutive list items into <ul>
-    const groupedElements: React.ReactNode[] = [];
-    let currentList: React.ReactNode[] = [];
-
-    elements.forEach((el, index) => {
-        if (React.isValidElement(el) && el.type === 'li') {
-            currentList.push(el);
-        } else {
-            if (currentList.length > 0) {
-                groupedElements.push(<ul key={`ul-${index}`} className="list-disc pl-5 space-y-1 my-3">{currentList}</ul>);
-                currentList = [];
-            }
-            if (React.isValidElement(el) && el.type !== 'br') {
-                 groupedElements.push(el);
-            }
-        }
-    });
-
-    if (currentList.length > 0) {
-        groupedElements.push(<ul key="ul-last" className="list-disc pl-5 space-y-1 my-3">{currentList}</ul>);
-    }
-
-    return <div className="text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">{groupedElements}</div>;
-};
-
 const StatusBadge: React.FC<{ status: Session['status'] }> = ({ status }) => {
-    const { lang } = useContext(SettingsContext);
+    const { lang } = useSettings();
     switch (status) {
         case 'QUEUED':
             return <div className="flex items-center gap-2 text-yellow-700 bg-yellow-100 dark:text-yellow-400 dark:bg-yellow-500/10 px-3 py-1 rounded-full text-sm font-semibold"><ClockIcon className="w-4 h-4" />{STRINGS[lang].statusQueued}</div>;
@@ -95,9 +35,9 @@ const StatusBadge: React.FC<{ status: Session['status'] }> = ({ status }) => {
 }
 
 export const SessionView: React.FC<SessionViewProps> = ({ session, setView, updateSession }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   const [activeTab, setActiveTab] = useState<Tab>(session?.doSummary ? 'summary' : 'raw');
-  const [isFormatting, setIsFormatting] = useState(false);
+  const [formattingType, setFormattingType] = useState<null | 'notion' | 'google_docs'>(null);
   const [formatError, setFormatError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -118,12 +58,11 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
     }
   };
   
-  const handleFormatForNotion = async () => {
+  const handleFormat = async (formatter: (transcript: string, model: Session['aiModel']) => Promise<Record<'pl' | 'en', string>>) => {
     if (!session.artifacts?.rawTranscript) return;
-    setIsFormatting(true);
     setFormatError(null);
     try {
-        const formattedSummary = await formatForNotion(session.artifacts.rawTranscript, session.aiModel);
+        const formattedSummary = await formatter(session.artifacts.rawTranscript, session.aiModel);
         updateSession(session.id, {
             artifacts: {
                 ...session.artifacts,
@@ -132,11 +71,21 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
         });
         setActiveTab('summary');
     } catch (error) {
-        console.error("Failed to format for Notion:", error);
+        console.error("Failed to format text:", error);
         setFormatError(STRINGS[lang].formatError);
-    } finally {
-        setIsFormatting(false);
     }
+  };
+
+  const handleFormatForNotion = async () => {
+    setFormattingType('notion');
+    await handleFormat(formatForNotion);
+    setFormattingType(null);
+  };
+
+  const handleFormatForGoogleDocs = async () => {
+    setFormattingType('google_docs');
+    await handleFormat(formatForGoogleDocs);
+    setFormattingType(null);
   };
 
   const isProcessing = session.status === 'QUEUED' || session.status === 'PROCESSING';
@@ -180,8 +129,11 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
     }
   };
 
+  const currentLang = lang === 'auto' ? 'en' : lang;
+  const summaryForDisplay = session.artifacts?.summaryMd?.[currentLang] || '';
+
   const textToCopy = activeTab === 'summary' 
-    ? session.artifacts?.summaryMd || '' 
+    ? summaryForDisplay
     : session.artifacts?.rawTranscript || '';
 
   return (
@@ -264,11 +216,19 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
             <div className="flex items-center gap-2 self-start sm:self-center">
                  <button
                     onClick={handleFormatForNotion}
-                    disabled={isFormatting || !session.artifacts?.rawTranscript}
+                    disabled={!!formattingType || !session.artifacts?.rawTranscript}
                     className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border-indigo-200 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isFormatting ? <Spinner className="w-4 h-4" /> : <NotionIcon className="w-4 h-4" />}
-                    <span>{isFormatting ? STRINGS[lang].formattingForNotion : STRINGS[lang].formatForNotion}</span>
+                    {formattingType === 'notion' ? <Spinner className="w-4 h-4" /> : <NotionIcon className="w-4 h-4" />}
+                    <span>{formattingType === 'notion' ? STRINGS[lang].formattingForNotion : STRINGS[lang].formatForNotion}</span>
+                </button>
+                <button
+                    onClick={handleFormatForGoogleDocs}
+                    disabled={!!formattingType || !session.artifacts?.rawTranscript}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border-indigo-200 dark:border-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {formattingType === 'google_docs' ? <Spinner className="w-4 h-4" /> : <GoogleDocsIcon className="w-4 h-4" />}
+                    <span>{formattingType === 'google_docs' ? STRINGS[lang].formattingForGoogleDocs : STRINGS[lang].formatForGoogleDocs}</span>
                 </button>
                 <CopyButton textToCopy={textToCopy} />
             </div>
@@ -279,8 +239,8 @@ export const SessionView: React.FC<SessionViewProps> = ({ session, setView, upda
         <div className="bg-white dark:bg-black/20 p-4 sm:p-6 rounded-lg min-h-[300px] border border-gray-200 dark:border-zinc-800/50">
             {activeTab === 'summary' && session.doSummary && (
                 <div>
-                    {session.artifacts?.summaryMd ? 
-                         <SimpleMarkdownRenderer content={session.artifacts.summaryMd} /> :
+                    {summaryForDisplay ? 
+                         <SimpleMarkdownRenderer content={summaryForDisplay} /> :
                         <p className="text-gray-500 dark:text-zinc-500 italic">{STRINGS[lang].noSummary}</p>
                     }
                 </div>

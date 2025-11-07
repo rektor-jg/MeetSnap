@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { Session, AppView } from '../types';
 import { STRINGS } from '../utils/i18n';
 import { MeetsnapLogo, ChevronLeftIcon } from './icons';
 import { SessionCard } from './SessionCard';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface HistoryViewProps {
   sessions: Session[];
@@ -13,7 +13,7 @@ interface HistoryViewProps {
 }
 
 export const HistoryView: React.FC<HistoryViewProps> = ({ sessions, setView, deleteSession, togglePinSession }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 

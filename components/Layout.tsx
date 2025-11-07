@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import type { AppView } from '../types';
 import { MeetsnapLogo } from './icons';
 import { STRINGS } from '../utils/i18n';
 import { ThemeToggle } from './ThemeToggle';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { Footer } from './Footer';
 
 interface LayoutProps {
@@ -16,13 +16,15 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, setView, onThemeToggle, isMatrix, onAdminUnlockClick, isAdminUnlocked }) => {
-  const { theme, lang, setLang } = useContext(SettingsContext);
+  const { theme, lang, setLang } = useSettings();
 
   const mainContent = (
     <div className="w-full max-w-3xl flex-grow">
       {children}
     </div>
   );
+
+  const layoutClasses = `min-h-screen text-gray-900 dark:text-gray-200 flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans transition-colors duration-300 bg-white dark:bg-black`;
 
   if (isMatrix) {
     return (
@@ -33,7 +35,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, setView, onThemeToggle
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-200 flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans transition-colors duration-300">
+    <div className={layoutClasses}>
       <div className="w-full max-w-3xl flex flex-col flex-grow">
         <header className="flex items-center justify-between mb-10 w-full gap-2">
             <div 

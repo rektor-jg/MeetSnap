@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import type { Session } from '../types';
 import { formatTime } from '../utils/formatUtils';
 import { STRINGS } from '../utils/i18n';
 import { ClockIcon, LanguageIcon, ModelIcon, TrashIcon, StarIcon } from './icons';
 import { StatusDisplay } from './StatusDisplay';
 import { DropdownMenu } from './DropdownMenu';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface SessionCardProps {
     session: Session;
@@ -21,8 +21,8 @@ const InfoPill: React.FC<{ icon: React.ReactNode, label: string }> = ({ icon, la
     </div>
 );
 
-export const SessionCard: React.FC<SessionCardProps> = ({ session, onClick, onDelete, onTogglePin }) => {
-    const { lang } = useContext(SettingsContext);
+const SessionCardComponent: React.FC<SessionCardProps> = ({ session, onClick, onDelete, onTogglePin }) => {
+    const { lang } = useSettings();
     const modelName = session.aiModel === 'fast' ? STRINGS[lang].modelFast : session.aiModel === 'advanced' ? STRINGS[lang].modelAdvanced : STRINGS[lang].modelPremium;
 
     const menuItems = [
@@ -88,3 +88,5 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, onClick, onDe
         </div>
     );
 };
+
+export const SessionCard = React.memo(SessionCardComponent);

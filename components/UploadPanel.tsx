@@ -3,7 +3,7 @@ import type { Language, AiModel } from '../types';
 import { MAX_FILE_SIZE_BYTES, ACCEPTED_AUDIO_TYPES } from '../constants';
 import { UploadIcon, YoutubeIcon, MusicalNoteIcon } from './icons';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { detectLanguageFromAudio } from '../services/geminiService';
 import { SessionSettings } from './SessionSettings';
 
@@ -14,7 +14,7 @@ interface UploadPanelProps {
 type UploadMode = 'file' | 'youtube';
 
 export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>('auto');
@@ -159,16 +159,16 @@ export const UploadPanel: React.FC<UploadPanelProps> = ({ onSubmit }) => {
         </div>
       ) : (
         <div className="flex flex-col items-center">
-            <div className="relative w-full">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="relative flex items-center w-full border border-gray-300 dark:border-zinc-700 rounded-lg bg-gray-50 dark:bg-zinc-800/50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent">
+                <span className="pl-3 pointer-events-none">
                   <YoutubeIcon className="w-5 h-5 text-gray-400 dark:text-zinc-500" />
-                </div>
+                </span>
                 <input
                     type="url"
                     value={youtubeUrl}
                     onChange={(e) => setYoutubeUrl(e.target.value)}
                     placeholder={STRINGS[lang].youtubePlaceholder}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-zinc-700 rounded-lg bg-gray-50 dark:bg-zinc-800/50 text-black dark:text-white focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full pl-2 pr-4 py-3 bg-transparent text-black dark:text-white focus:outline-none"
                 />
             </div>
              <p className="text-center text-xs text-gray-500 dark:text-zinc-400 mt-3">{STRINGS[lang].youtubeProcessingNote}</p>

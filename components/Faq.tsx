@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { SettingsContext } from '../context/SettingsContext';
+import React, { useState } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { STRINGS } from '../utils/i18n';
 import { FAQ_DATA, FaqContent } from '../data/faqData';
 import { ChevronDownIcon } from './icons';
@@ -10,7 +10,7 @@ interface FaqProps {
 }
 
 export const Faq: React.FC<FaqProps> = ({ setView }) => {
-    const { lang } = useContext(SettingsContext);
+    const { lang } = useSettings();
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     const faqData = FAQ_DATA[lang] || FAQ_DATA.en;

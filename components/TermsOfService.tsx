@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import type { AppView } from '../types';
 import { ChevronLeftIcon } from './icons';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { STRINGS } from '../utils/i18n';
 
 interface TermsOfServiceProps {
@@ -69,7 +69,7 @@ const pl = {
 };
 
 export const TermsOfService: React.FC<TermsOfServiceProps> = ({ setView }) => {
-    const { lang } = useContext(SettingsContext);
+    const { lang } = useSettings();
     const t = lang === 'pl' ? pl : en;
 
     return (

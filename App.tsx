@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import type { AppView, Session } from './types';
 import { HomeView } from './components/HomeView';
 import { SessionView } from './components/SessionView';
@@ -30,12 +30,12 @@ const AppContent: React.FC = () => {
   const { isEasterEggActive, isMatrixTheme, activateMatrixTheme, handleThemeToggle } = useMatrixEasterEgg();
   const { isAdminUnlocked, handleAdminUnlockClick } = useAdminEasterEgg();
   
-  const handleDeleteSession = (id: string) => {
+  const handleDeleteSession = useCallback((id: string) => {
     deleteSession(id);
     if (view.type === 'session' && view.sessionId === id) {
         setView({type: 'home'});
     }
-  };
+  }, [deleteSession, view]);
 
   const sortedSessions = useMemo(() => {
     return Object.values(sessions).sort((a: Session, b: Session) => {

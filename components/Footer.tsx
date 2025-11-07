@@ -1,14 +1,14 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import type { AppView } from '../types';
 import { STRINGS } from '../utils/i18n';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 
 interface FooterProps {
     setView: (view: AppView) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ setView }) => {
-    const { lang } = useContext(SettingsContext);
+    const { lang } = useSettings();
     
     const linkClasses = "text-xs text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:underline transition-colors";
 

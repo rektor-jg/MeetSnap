@@ -41,10 +41,11 @@ export const toVTT = (segments: Segment[]): string => {
 // toMarkdown
 export const toMarkdown = (session: Session, lang: Language, activeTab: 'summary' | 'raw'): string => {
     let content = `# ${session.title || `Session from ${new Date(session.createdAt).toLocaleString()}`}\n\n`;
+    const currentLang = lang === 'auto' ? 'en' : lang;
 
     if (activeTab === 'summary' && session.artifacts?.summaryMd) {
         content += `## ${STRINGS[lang].exportSummary}\n\n`;
-        content += session.artifacts.summaryMd;
+        content += session.artifacts.summaryMd[currentLang] || session.artifacts.summaryMd.en || '';
     } else if (session.artifacts?.rawTranscript) { // Default to raw if on raw tab or no summary
         content += `## ${STRINGS[lang].exportTranscription}\n\n`;
         content += session.artifacts.rawTranscript;
@@ -54,9 +55,10 @@ export const toMarkdown = (session: Session, lang: Language, activeTab: 'summary
 };
 
 // toTXT
-export const toTXT = (session: Session, activeTab: 'summary' | 'raw'): string => {
+export const toTXT = (session: Session, lang: Language, activeTab: 'summary' | 'raw'): string => {
+  const currentLang = lang === 'auto' ? 'en' : lang;
   if (activeTab === 'summary' && session.artifacts?.summaryMd) {
-    return session.artifacts.summaryMd;
+    return session.artifacts.summaryMd[currentLang] || session.artifacts.summaryMd.en || '';
   }
   return session.artifacts?.rawTranscript || '';
 };
@@ -79,7 +81,7 @@ export const exportToMarkdown = (session: Session, lang: Language, activeTab: 's
   triggerDownload(content, `${session.id}.md`, 'text/markdown');
 };
 
-export const exportToTXT = (session: Session, activeTab: 'summary' | 'raw') => {
-  const content = toTXT(session, activeTab);
+export const exportToTXT = (session: Session, lang: Language, activeTab: 'summary' | 'raw') => {
+  const content = toTXT(session, lang, activeTab);
   triggerDownload(content, `${session.id}.txt`, 'text/plain');
 };

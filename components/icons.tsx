@@ -81,14 +81,20 @@ export const MoonIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 export const YoutubeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M12.0002 3.82465C12.0002 3.82465 6.70227 3.82465 4.88727 4.38065C3.47327 4.79665 2.37327 5.89765 1.95627 7.31165C1.40027 9.12665 1.40027 12.0007 1.40027 12.0007C1.40027 12.0007 1.40027 14.8747 1.95627 16.6897C2.37227 18.1037 3.47327 19.2037 4.88727 19.6207C6.70227 20.1767 12.0002 20.1767 12.0002 20.1767C12.0002 20.1767 17.2982 20.1767 19.1132 19.6207C20.5272 19.2047 21.6272 18.1037 22.0442 16.6897C22.6002 14.8747 22.6002 12.0007 22.6002 12.0007C22.6002 12.0007 22.6002 9.12665 22.0442 7.31165C21.6282 5.89765 20.5272 4.79665 19.1132 4.38065C17.2982 3.82465 12.0002 3.82465 12.0002 3.82465ZM9.73327 15.1757V8.82565L15.6232 12.0007L9.73327 15.1757Z"></path>
+      <path d="M12.0002 3.82465C12.0002 3.82465 6.70227 3.82465 4.88727 4.38065C3.47327 4.79665 2.37327 5.89765 1.95627 7.31165C1.50027 9.12665 1.50027 12.0007 1.50027 12.0007C1.50027 12.0007 1.50027 14.8747 1.95627 16.6897C2.37327 18.1037 3.47327 19.2037 4.88727 19.6207C6.70227 20.1767 12.0002 20.1767 12.0002 20.1767C12.0002 20.1767 17.2982 20.1767 19.1132 19.6207C20.5272 19.2047 21.6272 18.1037 22.0442 16.6897C22.5002 14.8747 22.5002 12.0007 22.5002 12.0007C22.5002 12.0007 22.5002 9.12665 22.0442 7.31165C21.6272 5.89765 20.5272 4.79665 19.1132 4.38065C17.2982 3.82465 12.0002 3.82465 12.0002 3.82465ZM9.75027 15.4247V8.57665L15.8233 12.0007L9.75027 15.4247Z"/>
+    </svg>
+);
+
+export const MusicalNoteIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path fillRule="evenodd" d="M19.952 1.651a.75.75 0 01.298.6V11.25a.75.75 0 01-1.5 0V7.865l-3.58 1.432a.75.75 0 00-.57.708V18.375a3 3 0 101.5.825V13.5a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v5.625a4.5 4.5 0 11-8.25-2.125V6.93l-3.32-.83a.75.75 0 00-.93.633V18.375a3 3 0 101.5.825V9.75a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v8.625a4.5 4.5 0 11-8.25-2.125V5.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v1.261l3.58-1.432a.75.75 0 00.57-.708V2.25a.75.75 0 01.75-.75h.008a.75.75 0 01.698.451z" clipRule="evenodd" />
     </svg>
 );
 
 export const CalendarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18" />
+  </svg>
 );
 
 export const LanguageIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -98,23 +104,21 @@ export const LanguageIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
 );
 
 export const ModelIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5M19.5 8.25h-1.5m-15 3.75h1.5m15 0h1.5m-15 3.75h1.5m15 0h1.5" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-    </svg>
-);
-
-export const SpeakerWaveIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5M19.5 8.25h-1.5m-15 3.75h1.5m15 0h1.5m-15 3.75h1.5m15 0h1.5M12 12l-1.5 1.5-1.5-1.5m3 0l-1.5 1.5-1.5-1.5m3 0l1.5 1.5 1.5-1.5m-3 0l1.5 1.5 1.5-1.5m-7.5 0l-1.5 1.5-1.5-1.5m3 0l-1.5 1.5-1.5-1.5m3 0l1.5 1.5 1.5-1.5m-3 0l1.5 1.5 1.5-1.5" />
+  </svg>
 );
 
 export const ChevronLeftIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+  </svg>
+);
+
+export const NotionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M19.4 3.1h-15a1.5 1.5 0 0 0-1.5 1.5v15a1.5 1.5 0 0 0 1.5 1.5h15a1.5 1.5 0 0 0 1.5-1.5v-15a1.5 1.5 0 0 0-1.5-1.5Zm-9.55 12.5V8.4h2.15v2.6h2.25V8.4h2.25v7.2H14.2v-2.5h-2.2v2.5Z"/>
+  </svg>
 );
 
 export const CopyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -124,82 +128,81 @@ export const CopyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 export const CheckIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+  </svg>
 );
 
 export const TrashIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.067-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.124-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.077-2.09.921-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
     </svg>
 );
 
 export const EllipsisVerticalIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+  </svg>
 );
 
 export const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.007z" clipRule="evenodd" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+  </svg>
 );
 
 export const EditIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+  </svg>
+);
+
+export const GoogleDocsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+        <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM12.4 15.5H10V14H12.4V15.5ZM16 15.5H13.6V14H16V15.5ZM16 13H10V11.5H16V13Z" />
     </svg>
 );
 
-export const NotionIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-        <path d="M12.5714 8.24229L15.4286 15.7577H12.5714V8.24229Z" />
-        <path fillRule="evenodd" clipRule="evenodd" d="M3 3H21V21H3V3ZM8.28571 6.81371V17.1863H5.14286V6.81371H8.28571ZM18.8571 6.81371H15.7143V17.1863H18.8571V6.81371ZM9.71429 6.81371H11.1429V10.6709L14.2857 6.81371H14.2857L9.71429 17.1863V12.8279H11.1429L12.5714 14.8817V9.67086L9.71429 13.528V6.81371Z" />
-    </svg>
+// FIX: Added missing PhotoIcon component.
+export const PhotoIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+  </svg>
 );
 
 export const MicrophoneIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" />
-    </svg>
-);
-
-export const ExclamationTriangleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 013-3 3 3 0 013 3v8.25a3 3 0 01-3 3z" />
     </svg>
 );
 
 export const ArrowPathIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0 0v-4.992m0 0h-4.992" />
-    </svg>
-);
-
-// FIX: Added missing SettingsIcon.
-export const SettingsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-.95.55.057 1.007.56 1.007 1.11v.448c.522.072 1.026.187 1.503.334.478.147.92.343 1.326.58.406.238.78.524 1.107.851.326.327.613.701.85 1.107.238.406.434.848.58 1.327.147.476.262.98.334 1.503v.448c.057.55.56 1.007 1.11 1.007.55-.057 1.007-.56 1.007-1.11v-.448c-.072-.522-.187-1.026-.334-1.503a4.993 4.993 0 0 0-.58-1.327c-.238-.406-.524-.78-.851-1.107a4.993 4.993 0 0 0-1.107-.851c-.406-.238-.848-.434-1.327-.58a4.993 4.993 0 0 0-1.503-.334V3.94c0-.55-.457-1.007-1.007-1.007-.55 0-1.007.457-1.007 1.007v.448c-.522.072-1.026.187-1.503.334a4.993 4.993 0 0 0-1.327.58c-.406.238-.78.524-1.107.851a4.993 4.993 0 0 0-.85 1.107c-.238.406-.434.848-.58 1.327a4.993 4.993 0 0 0-.334 1.503v.448c0 .55.457 1.007 1.007 1.007.55 0 1.007-.457 1.007-1.007v-.448c.072-.522.187-1.026.334-1.503a4.993 4.993 0 0 0 .58-1.327c.238-.406.524-.78.851-1.107.327-.326.701-.613 1.107-.851.406-.238.848-.434 1.327-.58.476-.147.98-.262 1.503-.334v-.448z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0 0v-4.992m0 0h-4.992" />
+  </svg>
 );
 
 export const CodeBracketIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+  </svg>
+);
+
+export const ExclamationTriangleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+  </svg>
+);
+
+export const SettingsIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.227l.453-.148a2.25 2.25 0 012.18.383l.44 1.257c.225.641.9.998 1.58.998h1.228c.69 0 1.25.56 1.25 1.25v.393c0 .354-.15.688-.41.921l-1.07.955a2.25 2.25 0 01-1.603.493l-1.203-.223c-.636-.118-1.28.21-1.558.756l-.42 1.18c-.28.784-1.26.784-1.54 0l-.42-1.18a1.503 1.503 0 00-1.558-.756l-1.203.223a2.25 2.25 0 01-1.603-.493l-1.07-.955a1.222 1.222 0 01-.41-.921v-.393c0-.69.56-1.25 1.25-1.25h1.228c.68 0 1.355-.357 1.58-.998l.44-1.257a2.25 2.25 0 012.18-.383l.453.148c.55.22.998.685 1.11 1.227zM12 9a3 3 0 100 6 3 3 0 000-6z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15a6 6 0 100-12 6 6 0 000 12z" />
+  </svg>
 );
 
 export const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
     </svg>
-);
-
-export const MusicalNoteIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.07 1.918l-4.5 2.25a2.25 2.25 0 01-2.36 0l-4.5-2.25A2.25 2.25 0 016.75 12.75v-1.5a2.25 2.25 0 012.25-2.25H15M12 15.75v-1.5" />
-  </svg>
 );

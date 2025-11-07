@@ -1,10 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import type { AppView, Session, Language, AiModel } from '../types';
 import { RecordPanel } from './RecordPanel';
 import { UploadPanel } from './UploadPanel';
 import { STRINGS } from '../utils/i18n';
 import { StatusDisplay } from './StatusDisplay';
-import { SettingsContext } from '../context/SettingsContext';
+import { useSettings } from '../context/SettingsContext';
 import { Faq } from './Faq';
 
 interface HomeViewProps {
@@ -17,7 +17,7 @@ type Tab = 'record' | 'upload';
 
 export const HomeView: React.FC<HomeViewProps> = ({ onSubmit, setView, sessions }) => {
   const [activeTab, setActiveTab] = useState<Tab>('record');
-  const { lang } = useContext(SettingsContext);
+  const { lang } = useSettings();
 
   const handleProcessRequest = async (params: { blob?: Blob, youtubeUrl?: string, language: Language, doSummary: boolean, aiModel: AiModel }) => {
     const newSession = await onSubmit(params);
